@@ -12,8 +12,11 @@ import lombok.Data;
 @Data
 public class StockDateId implements Serializable {
 
+    /**
+     * TODO : 현재 hibernate 설정에 따라, 복합키가 자동으로 알파벳 순으로 생성되지만, 추후 DabaBase에서 DDL을 통해 생성할 때는 알파벳 순서가 아닌 (stock_code, original_date)로 변경해서 테스트 필요
+     */
     @ManyToOne(fetch = javax.persistence.FetchType.LAZY)
-    @JoinColumn(name = "a_stock_code") // 개발 편의성을 위해, 복합키 Primary Key 생성 규칙에 따라 알파벳 순서가 아닌 a_를 붙임, 추후 DabaBase에서 DDL을 통해 생성할 때는 a_를 제거해야 함
+    @JoinColumn(name = "stock_code")
     private Stock stock;
 
     @Column(name = "original_date")
