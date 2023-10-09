@@ -17,7 +17,7 @@ import stock.chart.domain.base.BaseTimeEntity;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Board extends BaseTimeEntity {
 
     @Id
@@ -29,8 +29,8 @@ public class Board extends BaseTimeEntity {
     private String content;
 
     @ManyToOne(fetch = javax.persistence.FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @OneToOne(fetch = javax.persistence.FetchType.LAZY)
     @JoinColumn(name = "stock_code")

@@ -13,15 +13,15 @@ import stock.chart.domain.base.BaseTimeEntity;
 @Entity
 @Getter
 @Setter
-public class UserInterestStock extends BaseTimeEntity {
+public class MemberInterestStock extends BaseTimeEntity {
 
     @Id
-    @Column(name = "user_interest_stock_id")
+    @Column(name = "member_interest_stock_id")
     @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = javax.persistence.FetchType.LAZY)
     @JoinColumn(name = "group_id")
-    private UserInterestGroup userInterestGroup;
+    private MemberInterestGroup memberInterestGroup;
 
 }

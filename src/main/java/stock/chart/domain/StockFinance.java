@@ -14,7 +14,7 @@ import stock.chart.domain.base.BaseTimeEntity;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 public class StockFinance extends BaseTimeEntity implements Persistable<StockDateId> {
 

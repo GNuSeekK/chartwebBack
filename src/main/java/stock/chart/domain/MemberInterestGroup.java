@@ -15,7 +15,7 @@ import stock.chart.domain.base.BaseTimeEntity;
 @Entity
 @Getter
 @Setter
-public class UserInterestGroup extends BaseTimeEntity {
+public class MemberInterestGroup extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = javax.persistence.GenerationType.IDENTITY)
@@ -26,18 +26,18 @@ public class UserInterestGroup extends BaseTimeEntity {
     private String groupName;
 
     @ManyToOne(fetch = javax.persistence.FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
-    @OneToMany(mappedBy = "userInterestGroup")
-    private List<UserInterestStock> userInterestStocks;
+    @OneToMany(mappedBy = "memberInterestGroup")
+    private List<MemberInterestStock> memberInterestStocks;
 
     /**
      * 양방향 연관관계 편의 메서드
      */
-    public void addUserInterestStock(UserInterestStock userInterestStock) {
-        this.userInterestStocks.add(userInterestStock);
-        userInterestStock.setUserInterestGroup(this);
+    public void addUserInterestStock(MemberInterestStock memberInterestStock) {
+        this.memberInterestStocks.add(memberInterestStock);
+        memberInterestStock.setMemberInterestGroup(this);
     }
 
 }

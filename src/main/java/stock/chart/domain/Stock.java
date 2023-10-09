@@ -14,7 +14,7 @@ import org.springframework.data.domain.Persistable;
 import stock.chart.domain.base.BaseTimeEntity;
 
 
-@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Setter

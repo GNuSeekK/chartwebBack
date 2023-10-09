@@ -1,7 +1,6 @@
 package stock.chart.domain;
 
 import com.sun.istack.NotNull;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -28,8 +27,8 @@ public class Comment extends BaseTimeEntity {
     private String content;
 
     @ManyToOne(fetch = javax.persistence.FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @ManyToOne(fetch = javax.persistence.FetchType.LAZY)
     @JoinColumn(name = "board_id")
