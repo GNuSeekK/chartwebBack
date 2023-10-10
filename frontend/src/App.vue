@@ -1,6 +1,8 @@
 <script>
 import LoginModal from "@/components/Modal/LoginModal.vue";
 import axios from "axios";
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = 'http://localhost:8080';
 
 export default {
   components: {
@@ -39,9 +41,6 @@ export default {
         }
       })
       .then(res => {
-        console.log(res);
-        this.$cookies.set("refreshToken", res.data.refreshToken, "14d", "/", "localhost", true, "None");
-        console.log(this.$cookies.get("refreshToken"));
         this.accessToken = res.data.accessToken;
         console.log(this.accessToken);
       })
