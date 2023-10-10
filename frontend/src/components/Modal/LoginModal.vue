@@ -25,6 +25,9 @@
 import CommonModal from "./CommonModal.vue";
 import axios from "axios";
 
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = 'http://localhost:8080';
+
 export default {
   name: 'LoginModal',
   components: {CommonModal},
@@ -41,7 +44,6 @@ export default {
       axios.post('http://localhost:8080/login/member', this.user)
       .then(res => {
         console.log(res);
-        this.$cookies.set("refreshToken", res.data.refreshToken, "14d", "/", "localhost", true, "None");
         this.accessToken = res.data.accessToken;
         console.log(this.accessToken);
       }).catch(err => {
