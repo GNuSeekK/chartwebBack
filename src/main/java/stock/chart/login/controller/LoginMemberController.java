@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.WebUtils;
 import stock.chart.login.dto.LoginMemberRequestDto;
+import stock.chart.login.dto.UsedTokenError;
 import stock.chart.login.service.LoginMemberService;
 import stock.chart.security.dto.TokenInfo;
 
@@ -36,6 +37,11 @@ public class LoginMemberController {
         log.info("memberLoginRequestDto: {}", loginMemberRequestDto);
         TokenInfo token = loginMemberService.login(loginMemberRequestDto);
         log.info("token: {}", token);
+        Cookie refreshToken = new Cookie("refreshToken", token.getRefreshToken());
+        response.setHeader("Access-Control-Allow-Origin", referer);
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.setHeader("Set-Cookie",
+            "refreshToken=" + token.getRefreshToken() + "; Path=/; HttpOnly; Secure; Max-Age=" + refreshTokenExpired);
         return token;
     }
 
@@ -57,6 +63,12 @@ public class LoginMemberController {
         log.info("refreshToken: {}", refreshToken);
         Object responseJson = loginMemberService.reissue(refreshToken.getValue());
         log.info("tokenInfo: {}", responseJson);
+        if (responseJson instanceof TokenInfo) {
+            TokenInfo tokenInfo = (TokenInfo) responseJson;
+            Cookie newRefreshToken = new Cookie("refreshToken", tokenInfo.getRefreshToken());
+            response.setHeader("Set-Cookie",
+                "refreshToken=" + tokenInfo.getRefreshToken() + "; Path=/; HttpOnly; Secure; Max-Age=" + refreshTokenExpired);
+        }
         return responseJson;
     }
 
