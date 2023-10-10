@@ -1,11 +1,9 @@
 package stock.chart.login.dto;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 @Data
-public class MemberLoginRequestDto {
+public class LoginMemberRequestDto {
 
     private String memberEmail;
     private String password;

@@ -7,8 +7,8 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -27,11 +27,17 @@ import stock.chart.security.dto.TokenInfo;
 @Slf4j
 @Component
 public class JwtTokenProvider {
-    private final Key key;
 
-    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
-        byte[] keyBytes = secretKey.getBytes();
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+
+    private Key secret;
+    @Value("${jwt.access-expired}")
+    private Long accessTokenExpired;
+    @Value("${jwt.refresh-expired}")
+    private Long refreshTokenExpired;
+
+    public JwtTokenProvider(@Value("${jwt.secret}") String secret) {
+        byte[] keyBytes = secret.getBytes();
+        this.secret = Keys.hmacShaKeyFor(keyBytes);
     }
 
     /**
@@ -39,28 +45,26 @@ public class JwtTokenProvider {
      */
     public TokenInfo generateToken(Authentication authentication) {
         log.info("generateToken start");
-//        String authorities = authentication.getAuthorities().stream()
-//            .map(GrantedAuthority::getAuthority)
-//            .collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
-        Date accessTokenExpiresIn = new Date(now + (1000 * 60 * 30)); // 30분
-        Date refreshTokenExpiresIn = new Date(now + (1000 * 60 * 60 * 24 * 14)); // 14일
+        Date accessTokenExpiresIn = new Date(now + (1000 * accessTokenExpired)); // 30분
+        Date refreshTokenExpiresIn = new Date(now + (1000 * refreshTokenExpired)); // 14일
 
         String accessToken = Jwts.builder()
             .setSubject(authentication.getName())
             .claim("auth", "USER")
             .setExpiration(accessTokenExpiresIn)
-            .signWith(key, SignatureAlgorithm.HS256)
+            .signWith(secret, SignatureAlgorithm.HS256)
             .compact();
 
         log.info(parseClaims(accessToken).toString());
 
         String refreshToken = Jwts.builder()
             .setExpiration(refreshTokenExpiresIn)
-            .signWith(key, SignatureAlgorithm.HS256)
+            .signWith(secret, SignatureAlgorithm.HS256)
             .compact();
 
+        log.info("accessToken: {}", accessToken);
         return TokenInfo.builder()
                 .grantType("Bearer")
                 .accessToken(accessToken)
@@ -92,13 +96,17 @@ public class JwtTokenProvider {
      * 토큰 정보 검증
      */
     public boolean validateToken(String token) {
+        log.info("validateToken start");
+        log.info("token: {}", token);
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token", e);
         } catch (ExpiredJwtException e) {
+            // refresh token 활용해서 재발급
             log.info("Expired JWT Token", e);
+            throw e;
         } catch (UnsupportedJwtException e) {
             log.info("Unsupported JWT Token", e);
         } catch (IllegalArgumentException e) {
@@ -110,12 +118,21 @@ public class JwtTokenProvider {
     private Claims parseClaims(String accessToken) {
         try {
             return Jwts.parserBuilder()
-               .setSigningKey(key)
+               .setSigningKey(secret)
                .build()
                .parseClaimsJws(accessToken)
                .getBody();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
+    }
+
+    public String getMemberEmail(String refreshToken) {
+        Claims claims = Jwts.parserBuilder()
+            .setSigningKey(secret)
+            .build()
+            .parseClaimsJws(refreshToken)
+            .getBody();
+        return claims.getSubject();
     }
 }

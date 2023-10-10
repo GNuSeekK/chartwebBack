@@ -19,7 +19,7 @@ import stock.chart.domain.base.BaseTimeEntity;
 @Entity
 @Setter
 @Getter
-public class Stock extends BaseTimeEntity implements Persistable<String>  {
+public class Stock extends BaseTimeEntity implements Persistable<String> {
 
     @Id
     @Column(name = "stock_code")

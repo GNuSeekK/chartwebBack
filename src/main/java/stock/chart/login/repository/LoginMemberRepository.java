@@ -6,8 +6,7 @@ import org.springframework.stereotype.Repository;
 import stock.chart.domain.Member;
 
 @Repository
-public interface MemberRepository extends JpaRepository<Member, Long> {
-//    Optional<Member> findByMemberId(String memberId);
-
+public interface LoginMemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByEmail(String email);
+
 }
