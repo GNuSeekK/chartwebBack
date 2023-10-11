@@ -29,7 +29,7 @@ import stock.chart.domain.base.BaseTimeEntity;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Member extends BaseTimeEntity implements UserDetails {
+public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,39 +57,4 @@ public class Member extends BaseTimeEntity implements UserDetails {
         memberInterestGroup.setMember(this);
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Builder.Default
-    private List<String> roles = new ArrayList<>();
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public String getUsername() {
-        return this.id.toString();
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
 }

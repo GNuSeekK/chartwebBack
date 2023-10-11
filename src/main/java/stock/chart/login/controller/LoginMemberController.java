@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.WebUtils;
 import stock.chart.login.dto.LoginMemberRequestDto;
-import stock.chart.login.dto.UsedTokenError;
 import stock.chart.login.service.LoginMemberService;
 import stock.chart.security.dto.TokenInfo;
 
@@ -38,8 +37,6 @@ public class LoginMemberController {
         TokenInfo token = loginMemberService.login(loginMemberRequestDto);
         log.info("token: {}", token);
         Cookie refreshToken = new Cookie("refreshToken", token.getRefreshToken());
-        response.setHeader("Access-Control-Allow-Origin", referer);
-        response.setHeader("Access-Control-Allow-Credentials", "true");
         response.setHeader("Set-Cookie",
             "refreshToken=" + token.getRefreshToken() + "; Path=/; HttpOnly; Secure; Max-Age=" + refreshTokenExpired);
         return token;
@@ -53,11 +50,6 @@ public class LoginMemberController {
     @GetMapping("/token/reissue")
     public Object reissueAccessToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            log.info("cookie: {}", cookie);
-        }
-
         log.info("reissueAccessToken start");
         Cookie refreshToken = WebUtils.getCookie(request, "refreshToken");
         log.info("refreshToken: {}", refreshToken);
@@ -65,7 +57,6 @@ public class LoginMemberController {
         log.info("tokenInfo: {}", responseJson);
         if (responseJson instanceof TokenInfo) {
             TokenInfo tokenInfo = (TokenInfo) responseJson;
-            Cookie newRefreshToken = new Cookie("refreshToken", tokenInfo.getRefreshToken());
             response.setHeader("Set-Cookie",
                 "refreshToken=" + tokenInfo.getRefreshToken() + "; Path=/; HttpOnly; Secure; Max-Age=" + refreshTokenExpired);
         }

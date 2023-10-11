@@ -46,7 +46,7 @@ public class JwtTokenProvider {
     public TokenInfo generateToken(Authentication authentication) {
         log.info("generateToken start");
 
-        long now = (new Date()).getTime();
+        long now = new Date(System.currentTimeMillis()).getTime();
         Date accessTokenExpiresIn = new Date(now + (1000 * accessTokenExpired)); // 30분
         Date refreshTokenExpiresIn = new Date(now + (1000 * refreshTokenExpired)); // 14일
 
@@ -101,7 +101,7 @@ public class JwtTokenProvider {
         try {
             Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token);
             return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+        } catch (SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token", e);
         } catch (ExpiredJwtException e) {
             // refresh token 활용해서 재발급
