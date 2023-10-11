@@ -37,6 +37,7 @@ public class Member extends BaseTimeEntity implements UserDetails {
     private Long id;
 
     @NotNull
+    @Column(unique = true)
     private String email;
 
     @NotNull
