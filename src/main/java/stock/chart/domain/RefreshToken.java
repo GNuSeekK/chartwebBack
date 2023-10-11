@@ -43,4 +43,5 @@ public class RefreshToken extends BaseTimeEntity implements Persistable<String> 
     public void updateStatus(RefreshTokenStatus refreshTokenStatus) {
         this.status = refreshTokenStatus;
     }
+
 }

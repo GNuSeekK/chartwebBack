@@ -49,6 +49,8 @@ public class Member extends BaseTimeEntity implements UserDetails {
     @OneToMany(mappedBy = "member")
     private List<MemberInterestGroup> memberInterestGroups;
 
+
+
     /**
      * 양방향 연관관계 메서드
      */
@@ -57,7 +59,7 @@ public class Member extends BaseTimeEntity implements UserDetails {
         memberInterestGroup.setMember(this);
     }
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
 
