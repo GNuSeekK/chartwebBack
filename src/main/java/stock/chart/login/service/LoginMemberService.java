@@ -43,9 +43,8 @@ public class LoginMemberService {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
-
         // 2. 토큰 생성
-        TokenInfo tokenInfo = createNewToken(memberEmail, password);
+        TokenInfo tokenInfo = createNewToken(member.getId(), password);
 
         // 3. 저장소에 Refresh Token 저장
         saveRefreshToken(tokenInfo, member);
@@ -65,12 +64,14 @@ public class LoginMemberService {
         // 유효할 경우 Refresh Token 가져와서 사용
         RefreshToken refreshTokenEntity = refreshTokenRotation(refreshToken);
         if (refreshTokenEntity.getStatus() == RefreshTokenStatus.INVALID) {
-            return new UsedTokenError("토큰 탈취 에러", HttpStatus.BAD_REQUEST.toString(),"Refresh Token이 이미 사용되었습니다.");
+            return new UsedTokenError("토큰 탈취 에러", HttpStatus.BAD_REQUEST.toString(), "Refresh Token이 이미 사용되었습니다.");
         }
         refreshTokenEntity.updateStatus(RefreshTokenStatus.INVALID);
 
+        log.info(jwtTokenProvider.getMemberId(refreshToken));
         // 3. 토큰 생성
-        TokenInfo tokenInfo = createNewToken(refreshTokenEntity.getMember().getEmail(), refreshTokenEntity.getMember().getPassword());
+        TokenInfo tokenInfo = createNewToken(jwtTokenProvider.getMemberId(refreshToken),
+            refreshTokenEntity.getMember().getPassword());
 
         // 4. 저장소에 Refresh Token 저장
         saveRefreshToken(tokenInfo, refreshTokenEntity.getMember());
@@ -83,26 +84,32 @@ public class LoginMemberService {
      * Refresh Token Rotation 기법 적용
      */
     private RefreshToken refreshTokenRotation(String refreshToken) {
-        Optional<RefreshToken> token = refreshTokenRepository.findById(refreshToken);
+        log.info("refreshTokenRotation start");
+        Optional<RefreshToken> token = refreshTokenRepository.findFetchByRefreshToken(refreshToken);
         if (token.isEmpty()) {
             throw new RuntimeException("Refresh Token이 유효하지 않습니다.");
         }
+        log.info("token: {}", token);
         RefreshToken refreshTokenEntity = token.get();
+        log.info("refreshTokenEntity: {}", refreshTokenEntity);
         if (refreshTokenEntity.getStatus() == RefreshTokenStatus.INVALID) {
             // 탈취된 토큰이 활용된 것이므로, 관련 멤버의 모든 Refresh Token을 무효화한다.
             // refresh 토큰은 한번만 사용할 수 있도록 한다.
             refreshTokenRepository.updateAllByMember(refreshTokenEntity.getMember(), RefreshTokenStatus.INVALID);
         }
+        log.info("end refreshTokenRotation");
         return refreshTokenEntity;
     }
 
     /**
      * 새로운 토큰 생성
      */
-    private TokenInfo createNewToken(String memberEmail, String password) {
+    private TokenInfo createNewToken(String id, String password) {
         log.info("createNewToken start");
         // 1. Refresh Token으로 MemberEmail 조회
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(memberEmail, password);
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(id,
+            password);
+        log.info("authenticationToken: {}", authenticationToken);
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         log.info("authentication: {}", authentication);
         // 2. 새로운 토큰 생성 - refresh token도 새로 생성해서 나가게 된다.
@@ -110,12 +117,18 @@ public class LoginMemberService {
     }
 
     /**
+     * createNewToken 오버로딩
+     */
+    private TokenInfo createNewToken(Long id, String password) {
+        return createNewToken(id.toString(), password);
+    }
+
+    /**
      * Refresh Token 저장
      */
-    private void saveRefreshToken(TokenInfo tokenInfo, Member refreshTokenEntity) {
+    private void saveRefreshToken(TokenInfo tokenInfo, Member member) {
         log.info("saveRefreshToken start");
-        RefreshToken newRefreshToken = new RefreshToken(tokenInfo.getRefreshToken(), RefreshTokenStatus.VALID,
-            refreshTokenEntity);
+        RefreshToken newRefreshToken = new RefreshToken(tokenInfo.getRefreshToken(), RefreshTokenStatus.VALID, member);
         refreshTokenRepository.save(newRefreshToken);
     }
 

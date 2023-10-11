@@ -8,7 +8,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import java.security.Key;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -60,6 +59,7 @@ public class JwtTokenProvider {
         log.info(parseClaims(accessToken).toString());
 
         String refreshToken = Jwts.builder()
+            .setSubject(authentication.getName())
             .setExpiration(refreshTokenExpiresIn)
             .signWith(secret, SignatureAlgorithm.HS256)
             .compact();
@@ -127,7 +127,7 @@ public class JwtTokenProvider {
         }
     }
 
-    public String getMemberEmail(String refreshToken) {
+    public String getMemberId(String refreshToken) {
         Claims claims = Jwts.parserBuilder()
             .setSigningKey(secret)
             .build()
