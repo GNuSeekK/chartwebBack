@@ -1,14 +1,12 @@
 <template>
-  <div id="backdrop">
+  <div id="backdrop" @click="closeModal"></div>
     <div id="modal">
       <slot></slot>
     </div>
-  </div>
 </template>
-<script>
-export default {
-  name: 'CommonModal',
-}
+<script setup>
+import { inject } from 'vue';
+const closeModal = inject('loginModalChange');
 </script>
 <style scoped>
 
@@ -19,8 +17,7 @@ export default {
   width: 100%;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 100;
-
+  z-index: 8;
 }
 
 #modal {
@@ -28,5 +25,6 @@ export default {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 100;
 }
 </style>

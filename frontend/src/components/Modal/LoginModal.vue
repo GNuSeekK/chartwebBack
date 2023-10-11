@@ -5,11 +5,11 @@
         <form id="login-in">
           <h1 class="login__title">Stock Quant</h1>
           <div class="loginBox">
-            <input type="text" placeholder="아이디" name="userId" v-model="user.memberEmail"/>
+            <input type="text" placeholder="아이디" name="userId" v-model="loginUser.memberEmail"/>
           </div>
 
           <div class="loginBox">
-            <input type="password" placeholder="비밀번호" name="userPw" v-model="user.password"/>
+            <input type="password" placeholder="비밀번호" name="userPw" v-model="loginUser.password"/>
           </div>
 
           <button type="button" @click="login">로그인</button>
@@ -21,38 +21,34 @@
   </CommonModal>
 </template>
 
-<script>
-import CommonModal from "./CommonModal.vue";
-import axios from "axios";
+<script setup>
+import CommonModal from "@/components/Modal/CommonModal.vue";
+import {inject, reactive} from "vue";
+const axios = inject('axios');
+const getMemberInfo = inject('getMemberInfo');
+const accessToken = inject('accessToken');
+const loginUser = reactive({
+  memberEmail: '',
+  password: ''
+})
 
-axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://localhost:8080';
-
-export default {
-  name: 'LoginModal',
-  components: {CommonModal},
-  data() {
-    return {
-      user: {
-        memberEmail: '',
-        password: ''
-      }
-    }
-  },
-  methods: {
-    login() {
-      axios.post('http://localhost:8080/login/member', this.user)
-      .then(res => {
-        console.log(res);
-        this.accessToken = res.data.accessToken;
-        console.log(this.accessToken);
-      }).catch(err => {
-        console.log(err);
-      })
-    }
-  }
+const userInfo = inject('userInfo');
+let loginModalChange = inject('loginModalChange');
+const login = () => {
+  axios.post('http://localhost:8080/login/member', {
+    memberEmail: loginUser.memberEmail,
+    password: loginUser.password
+  })
+  .then(res => {
+    accessToken.value = res.data.accessToken;
+    getMemberInfo();
+    loginModalChange();
+  }).catch(err => {
+    console.log(err);
+  })
 
 }
+
 </script>
 
 <style scoped>
