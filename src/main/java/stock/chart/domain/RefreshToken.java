@@ -1,5 +1,7 @@
 package stock.chart.domain;
 
+import java.time.LocalDateTime;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -10,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.domain.Persistable;
 import stock.chart.domain.base.BaseTimeEntity;
 
@@ -17,7 +20,13 @@ import stock.chart.domain.base.BaseTimeEntity;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class RefreshToken extends BaseTimeEntity implements Persistable<String> {
+public class RefreshToken implements Persistable<String> {
+
+    public RefreshToken(String refreshToken, RefreshTokenStatus status, Member member) {
+        this.refreshToken = refreshToken;
+        this.status = status;
+        this.member = member;
+    }
 
     @Id
     private String refreshToken;
@@ -28,6 +37,10 @@ public class RefreshToken extends BaseTimeEntity implements Persistable<String> 
     @ManyToOne(fetch = javax.persistence.FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
 
     @Override
     public String getId() {
