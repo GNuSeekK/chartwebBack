@@ -12,11 +12,11 @@ const closeModal = inject('loginModalChange');
 
 #backdrop {
   position: fixed;
-  top: 30px;
+  top: 0;
   left: 0;
   width: 100%;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.2);
   z-index: 8;
 }
 

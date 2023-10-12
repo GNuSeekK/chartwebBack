@@ -4,16 +4,15 @@
       <div class="content">
         <form id="login-in">
           <h1 class="login__title">Stock Quant</h1>
-          <div class="loginBox">
-            <input type="text" placeholder="아이디" name="userId" v-model="loginUser.memberEmail"/>
+          <div class="loginBox" :class="{'error':errors.email !== null}">
+            <input type="text" placeholder="아이디" name="userId" v-model="loginUser.email"/>
           </div>
-
-          <div class="loginBox">
+          <div class="loginBox" :class="{'error':errors.password !== null}">
             <input type="password" placeholder="비밀번호" name="userPw" v-model="loginUser.password"/>
           </div>
-
+          <p v-if="errors.match!==null">계정을 확인해주세요</p>
           <button type="button" @click="login">로그인</button>
-          <button type="button" @click="login">취 소</button>
+          <button type="button" @click="loginModalChange">취 소</button>
         </form>
       </div>
     </div>
@@ -24,19 +23,28 @@
 <script setup>
 import CommonModal from "@/components/Modal/CommonModal.vue";
 import {inject, reactive} from "vue";
+
 const axios = inject('axios');
 const getMemberInfo = inject('getMemberInfo');
 const accessToken = inject('accessToken');
 const loginUser = reactive({
-  memberEmail: '',
+  email: '',
   password: ''
 })
 
+const errors = reactive({
+  email: null,
+  password: null,
+  match: null
+})
 const userInfo = inject('userInfo');
 let loginModalChange = inject('loginModalChange');
 const login = () => {
+  errors.email = null;
+  errors.password = null;
+  errors.match = null;
   axios.post('http://localhost:8080/login/member', {
-    memberEmail: loginUser.memberEmail,
+    email: loginUser.email,
     password: loginUser.password
   })
   .then(res => {
@@ -44,7 +52,22 @@ const login = () => {
     getMemberInfo();
     loginModalChange();
   }).catch(err => {
-    console.log(err);
+    if (err.response.status === 404) {
+      errors.match = err.response.data[0].defaultMessage;
+    }
+    if (err.response.status === 400) {
+      err.response.data.forEach((item) => {
+        if (item.field === 'email') {
+          errors.email = item.defaultMessage;
+          loginUser.email = '';
+        }
+        if (item.field === 'password') {
+          errors.password = item.defaultMessage;
+          loginUser.password = '';
+        }
+      })
+      return;
+    }
   })
 
 }
@@ -63,6 +86,7 @@ button {
   border-radius: 0.5rem;
   transition: 0.3s;
 }
+
 button:hover {
   background-color: #2090a9;
 }
@@ -72,11 +96,13 @@ h1 {
 }
 
 input {
+  flex: 1;
   border: 1px black;
   font-size: 0.938rem;
   font-weight: 700;
   color: rgba(77, 32, 0, 0.82);
   width: 75%;
+
 }
 
 input::placeholder {
@@ -89,6 +115,14 @@ input:focus {
   border: 1px solid #027979;
 }
 
+input:hover {
+  background-color: rgb(0, 0, 0, 0.1);
+}
+
+.error::placeholder {
+  color: rgba(255, 0, 0, 0.5);
+}
+
 .loginBox {
   grid-template-columns: max-content 1fr;
   column-gap: 0.5rem;
@@ -96,6 +130,11 @@ input:focus {
   background-color: #fff;
   margin-top: 1rem;
   border-radius: 0.5rem;
+  display: flex;
+}
+
+.loginBox.error {
+  border: 1px solid red;
 }
 
 form {
@@ -116,5 +155,11 @@ form {
   width: 330px;
   margin-left: 1.5rem;
   margin-right: 1.5rem;
+}
+
+p {
+  font-size: 0.938rem;
+  font-weight: 700;
+  color: rgba(255, 32, 0, 0.82);
 }
 </style>
