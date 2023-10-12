@@ -47,9 +47,9 @@ public class MemberController {
     /**
      * 로그인 폼 확인 필요하면 400, 중복일 경우 409, 성공시 200
      */
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity registerMember(@Valid @RequestBody SignUpForm signUpForm, BindingResult bindingResult) {
-
+        log.info("signUpForm : {}", signUpForm);
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
