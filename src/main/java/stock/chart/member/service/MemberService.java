@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stock.chart.domain.Member;
+import stock.chart.member.dto.DeleteMemberForm;
 import stock.chart.member.dto.MemberInfoDto;
 import stock.chart.member.dto.SignUpForm;
 import stock.chart.member.exception.DuplicateEmailException;
@@ -43,6 +44,17 @@ public class MemberService {
                 throw new DuplicateNicknameException();
             });
         Member member = memberRepository.save(signUpForm.toEntity());
+        return member.getId();
+    }
+
+    @Transactional
+    public Long deleteMember(DeleteMemberForm deleteMemberForm) {
+        Member member = memberRepository.findByEmail(deleteMemberForm.getEmail())
+            .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+        if (!member.getPassword().equals(deleteMemberForm.getPassword())) {
+            throw new RuntimeException("password");
+        }
+        memberRepository.delete(member);
         return member.getId();
     }
 }
