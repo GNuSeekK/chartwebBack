@@ -5,14 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -20,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import stock.chart.member.dto.DeleteMemberForm;
 import stock.chart.member.dto.MemberInfoDto;
+import stock.chart.member.dto.PasswordChangeForm;
 import stock.chart.member.dto.SignUpForm;
 import stock.chart.member.exception.DuplicateMemberException;
+import stock.chart.member.exception.PasswordNotMatchException;
 import stock.chart.member.service.MemberService;
 
 @Slf4j
@@ -68,24 +66,46 @@ public class MemberController {
      * 성공 204, 403 비밀번호 불일치, 400 폼 입력 에러, 404 존재하지 않는 회원
      */
     @PostMapping("/delete")
-    public ResponseEntity deleteMember(@Valid @RequestBody DeleteMemberForm deleteMemberForm, BindingResult bindingResult) {
+    public ResponseEntity deleteMember(@Valid @RequestBody DeleteMemberForm deleteMemberForm,
+        BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
         }
 
         try {
             memberService.deleteMember(deleteMemberForm);
-        } catch (RuntimeException e) {
-            if (e.getMessage().equals("password")) {
-                bindingResult.addError(new FieldError("deleteMemberForm", "password", "비밀번호가 일치하지 않습니다."));
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(bindingResult.getAllErrors());
-            }
-            if (e.getMessage().equals("존재하지 않는 회원입니다.")) {
-                bindingResult.addError(new ObjectError("deleteMemberForm", "존재하지 않는 회원입니다."));
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(bindingResult.getAllErrors());
-            }
+        } catch (PasswordNotMatchException e) {
+            bindingResult.addError(e.getFieldError("deleteMemberForm"));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(bindingResult.getAllErrors());
         }
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+
+    /**
+     * 성공 202, 403 비밀번호 불일치, 400 폼 입력 에러, 404 존재하지 않는 회원
+     */
+    @PatchMapping("/password")
+    public ResponseEntity changePassword(@Valid @RequestBody PasswordChangeForm passwordChangeForm,
+        BindingResult bindingResult) {
+
+        if (!passwordChangeForm.getNewPassword().equals(passwordChangeForm.getNewPasswordConfirm())) {
+            bindingResult.addError(new FieldError("passwordChangeForm", "newPasswordConfirm", "비밀번호를 확인해 주세요."));
+        }
+
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
+        }
+
+        try {
+            memberService.changePassword(passwordChangeForm.getEmail(), passwordChangeForm.getPassword(),
+                passwordChangeForm.getNewPassword());
+        } catch (PasswordNotMatchException e) {
+            bindingResult.addError(e.getFieldError("passwordChangeForm"));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(bindingResult.getAllErrors());
+        }
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
 }

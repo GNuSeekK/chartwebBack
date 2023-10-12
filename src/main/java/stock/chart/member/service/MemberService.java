@@ -10,6 +10,7 @@ import stock.chart.member.dto.MemberInfoDto;
 import stock.chart.member.dto.SignUpForm;
 import stock.chart.member.exception.DuplicateEmailException;
 import stock.chart.member.exception.DuplicateNicknameException;
+import stock.chart.member.exception.PasswordNotMatchException;
 import stock.chart.member.repository.MemberRepository;
 import stock.chart.security.JwtTokenProvider;
 
@@ -53,9 +54,21 @@ public class MemberService {
             .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
         log.info("member : {}", member);
         if (!member.getPassword().equals(deleteMemberForm.getPassword())) {
-            throw new RuntimeException("password");
+            throw new PasswordNotMatchException();
         }
         memberRepository.delete(member);
+        return member.getId();
+    }
+
+    @Transactional
+    public Long changePassword(String email, String password, String newPassword) {
+        Member member = memberRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+        if (!member.getPassword().equals(password)) {
+            throw new PasswordNotMatchException();
+        }
+
+        member.changePassword(newPassword);
         return member.getId();
     }
 }
