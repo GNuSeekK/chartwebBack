@@ -1,9 +1,11 @@
 <script setup>
 import LoginModal from "@/components/Modal/LoginModal.vue";
-import {inject, provide, reactive, ref} from "vue";
+import {provide, reactive, ref} from "vue";
 
 import {useCookies} from "vue3-cookies";
 import axios from "axios";
+import MainSidebar from "@/components/MainSidebar.vue";
+
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = 'http://localhost:8080';
 
@@ -29,17 +31,8 @@ const userInfo = reactive({
   nickname: '',
 })
 provide('userInfo', userInfo);
-const logout = () => {
-  accessToken.value = '';
-  userInfo.id = '';
-  userInfo.email = '';
-  userInfo.nickname = '';
-  isLogin.value = false;
-  cookies.remove("refreshToken");
-}
-provide('logout', logout);
 const test = () => {
-axios.post('http://localhost:8080/login/test', {}, {
+  axios.post('http://localhost:8080/login/test', {}, {
     headers: {
       Authorization: `Bearer ${accessToken.value}`
     }
@@ -84,19 +77,39 @@ provide('getMemberInfo', getMemberInfo);
 </script>
 
 <template>
-  <!--  <div-button :text="'로그인'" @click="openLoginModal">-->
-  <!--    <template>-->
-  <!--      <h1>1234</h1>-->
-  <!--    </template>-->
-  <!--  </div-button>-->
-  <button @click="loginModalChange" v-if="!isLoginModal.valueOf()">로그인</button>
-  <button @click="logout" v-else>로그아웃</button>
-  <button @click="test">테스트</button>
-  <button @click="reissueToken">재발급</button>
-  <h2>{{userInfo.email}}</h2>
-  <LoginModal v-if="isLoginModal.valueOf()"/>
-
+  <div class="main">
+    <MainSidebar>
+    </MainSidebar>
+    <div class="main"></div>
+  </div>
+  <LoginModal v-if="isLoginModal.valueOf()"></LoginModal>
 </template>
 
 <style scoped>
+.main {
+  display: flex;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #b0eefd;
+  //margin-left: -12px;
+}
+
+.main {
+  flex: 500px 1;
+  flex-basis: 70%;
+}
+
+
+
+button {
+//display: block; padding: 1rem;
+  margin: 1rem;
+  background-color: #3e5eab;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 12px;
+}
 </style>
