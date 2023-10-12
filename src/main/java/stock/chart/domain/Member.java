@@ -1,6 +1,5 @@
 package stock.chart.domain;
 
-import com.sun.istack.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,19 +31,26 @@ import stock.chart.domain.base.BaseTimeEntity;
 @Builder
 public class Member extends BaseTimeEntity implements UserDetails {
 
+
+    public Member(String email, String password, String nickname) {
+        this.email = email;
+        this.password = password;
+        this.nickname = nickname;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name= "member_id")
     private Long id;
 
-    @NotNull
+    @NotBlank
     @Column(unique = true)
     private String email;
 
-    @NotNull
+    @NotBlank
     private String password;
 
-    @NotNull
+    @NotBlank
     @Column(unique = true)
     private String nickname;
 

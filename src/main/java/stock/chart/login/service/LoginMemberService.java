@@ -12,8 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import stock.chart.domain.Member;
 import stock.chart.domain.RefreshToken;
 import stock.chart.domain.RefreshTokenStatus;
-import stock.chart.login.dto.LoginMemberRequestDto;
+import stock.chart.login.dto.LoginMemberForm;
 import stock.chart.login.dto.UsedTokenError;
+import stock.chart.login.exception.MemberNotMatchException;
 import stock.chart.login.repository.LoginMemberRepository;
 import stock.chart.login.repository.RefreshTokenRepository;
 import stock.chart.security.JwtTokenProvider;
@@ -31,21 +32,19 @@ public class LoginMemberService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
-    public TokenInfo login(LoginMemberRequestDto loginMemberRequestDto) {
+    public TokenInfo login(LoginMemberForm loginMemberForm) {
         log.info("login start");
-        String memberEmail = loginMemberRequestDto.getMemberEmail();
-        String password = loginMemberRequestDto.getPassword();
+        String memberEmail = loginMemberForm.getEmail();
+        String password = loginMemberForm.getPassword();
 
         // 1. MemberEmail, Password로 Member 조회
         Member member = loginMemberRepository.findByEmail(memberEmail)
-            .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+            .orElseThrow(MemberNotMatchException::new);
         if (!member.getPassword().equals(password)) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            throw new MemberNotMatchException();
         }
-
         // 2. 토큰 생성
         TokenInfo tokenInfo = createNewToken(member.getId(), password);
-
         // 3. 저장소에 Refresh Token 저장
         saveRefreshToken(tokenInfo, member);
         log.info("end generateToken");
