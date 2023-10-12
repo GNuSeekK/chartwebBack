@@ -32,6 +32,7 @@ public class LoginMemberController {
     @Value("${cors.frontend}")
     private String referer;
 
+    @Value("${jwt.refresh-expired}")
     private Long refreshTokenExpired;
 
     private final LoginMemberService loginMemberService;
