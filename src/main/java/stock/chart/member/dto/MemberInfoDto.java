@@ -16,4 +16,5 @@ public class MemberInfoDto {
         this.email = email;
         this.nickname = nickname;
     }
+
 }
