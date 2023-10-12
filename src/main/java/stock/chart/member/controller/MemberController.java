@@ -65,9 +65,9 @@ public class MemberController {
     }
 
     /**
-     * 성공 204, 404 비밀번호 불일치, 400 폼 입력 에러
+     * 성공 204, 403 비밀번호 불일치, 400 폼 입력 에러, 404 존재하지 않는 회원
      */
-    @PostMapping("/member/delete")
+    @PostMapping("/delete")
     public ResponseEntity deleteMember(@Valid @RequestBody DeleteMemberForm deleteMemberForm, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
@@ -79,6 +79,10 @@ public class MemberController {
             if (e.getMessage().equals("password")) {
                 bindingResult.addError(new FieldError("deleteMemberForm", "password", "비밀번호가 일치하지 않습니다."));
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(bindingResult.getAllErrors());
+            }
+            if (e.getMessage().equals("존재하지 않는 회원입니다.")) {
+                bindingResult.addError(new ObjectError("deleteMemberForm", "존재하지 않는 회원입니다."));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(bindingResult.getAllErrors());
             }
         }
 

@@ -34,7 +34,8 @@ public class SecurityConfig {
             .antMatchers("/login/member").permitAll() // 해당 API 모든 요청 허가
             .antMatchers("/login/token/reissue").permitAll() // 해당 API 모든 요청 허가
             .antMatchers("/login/test").authenticated()
-            .antMatchers("/member/register").permitAll()
+            .antMatchers("/member/delete").permitAll()
+            .antMatchers("/member").permitAll()
             .antMatchers("/member/**").authenticated()
 //            .anyRequest().authenticated()
             .and()

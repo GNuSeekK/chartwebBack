@@ -51,6 +51,7 @@ public class MemberService {
     public Long deleteMember(DeleteMemberForm deleteMemberForm) {
         Member member = memberRepository.findByEmail(deleteMemberForm.getEmail())
             .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+        log.info("member : {}", member);
         if (!member.getPassword().equals(deleteMemberForm.getPassword())) {
             throw new RuntimeException("password");
         }
