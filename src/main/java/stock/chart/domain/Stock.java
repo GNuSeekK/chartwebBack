@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,8 +18,8 @@ import stock.chart.domain.base.BaseTimeEntity;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Setter
 @Getter
+@Builder
 public class Stock extends BaseTimeEntity implements Persistable<String> {
 
     @Id

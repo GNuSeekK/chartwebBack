@@ -6,13 +6,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import stock.chart.domain.base.BaseTimeEntity;
 
 @Entity
 @Getter
-@Setter
+@Builder
 public class MemberInterestStock extends BaseTimeEntity {
 
     @Id
@@ -24,4 +25,7 @@ public class MemberInterestStock extends BaseTimeEntity {
     @JoinColumn(name = "group_id")
     private MemberInterestGroup memberInterestGroup;
 
+    public void setMemberInterestGroup(MemberInterestGroup memberInterestGroup) {
+        this.memberInterestGroup = memberInterestGroup;
+    }
 }

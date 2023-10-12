@@ -25,7 +25,6 @@ import stock.chart.domain.base.BaseTimeEntity;
 
 @Entity
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
