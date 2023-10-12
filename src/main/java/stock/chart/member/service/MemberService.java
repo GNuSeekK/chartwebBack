@@ -71,4 +71,17 @@ public class MemberService {
         member.changePassword(newPassword);
         return member.getId();
     }
+
+
+    @Transactional
+    public Long changeNickname(String accessToken, String nickname) {
+        Long id = Long.valueOf(jwtTokenProvider.getMemberId(accessToken));
+        Member member = memberRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+        member.changeNickname(nickname);
+        if (memberRepository.findByNickname(nickname).isPresent()) {
+            throw new DuplicateNicknameException();
+        }
+        return member.getId();
+    }
 }

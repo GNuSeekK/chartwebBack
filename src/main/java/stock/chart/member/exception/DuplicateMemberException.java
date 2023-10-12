@@ -1,7 +1,6 @@
 package stock.chart.member.exception;
 
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 
 public class DuplicateMemberException extends RuntimeException {
 
@@ -11,8 +10,8 @@ public class DuplicateMemberException extends RuntimeException {
         this.field = field;
     }
 
-    public FieldError getFieldError() {
-        return new FieldError("signUpForm", field, getMessage());
+    public FieldError getFieldError(String objectName) {
+        return new FieldError(objectName, field, getMessage());
     }
 
 

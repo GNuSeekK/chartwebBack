@@ -3,6 +3,7 @@ package stock.chart.member.controller;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.exception.DataException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -15,10 +16,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import stock.chart.member.dto.DeleteMemberForm;
+import stock.chart.member.dto.MemberInfoChangeForm;
 import stock.chart.member.dto.MemberInfoDto;
 import stock.chart.member.dto.PasswordChangeForm;
 import stock.chart.member.dto.SignUpForm;
+import stock.chart.member.exception.DuplicateEmailException;
 import stock.chart.member.exception.DuplicateMemberException;
+import stock.chart.member.exception.DuplicateNicknameException;
 import stock.chart.member.exception.PasswordNotMatchException;
 import stock.chart.member.service.MemberService;
 
@@ -32,13 +36,7 @@ public class MemberController {
 
     @GetMapping("/info")
     public Object getMemberInfo(@RequestHeader("Authorization") String accessToken) {
-        if (accessToken == null || accessToken.isEmpty()) {
-            throw new RuntimeException("토큰이 존재하지 않습니다.");
-        }
-        if (!accessToken.startsWith("Bearer ")) {
-            throw new RuntimeException("토큰이 올바르지 않습니다.");
-        }
-        accessToken = accessToken.substring(7);
+        accessToken = accessTokenValidityCheck(accessToken);
         return memberService.getMemberInfo(accessToken);
     }
 
@@ -56,7 +54,7 @@ public class MemberController {
             Long id = memberService.registerMember(signUpForm);
             memberInfoDto = memberService.getMemberInfo(id);
         } catch (DuplicateMemberException e) {
-            bindingResult.addError(e.getFieldError());
+            bindingResult.addError(e.getFieldError("signUpForm"));
             return ResponseEntity.status(HttpStatus.CONFLICT).body(bindingResult.getAllErrors());
         }
         return ResponseEntity.ok().body(memberInfoDto);
@@ -106,6 +104,35 @@ public class MemberController {
         }
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    /**
+     * 닉네임 변경은 회원에 막대한 영향 끼치지 않으므로 accessToken만 확인하고 202 반환
+     * 만약 닉네임 중복일 경우에는 409 반환
+     */
+    @PatchMapping("/nickname")
+    public ResponseEntity changeNickname(@RequestHeader("Authorization") String accessToken, @RequestBody
+        MemberInfoChangeForm memberInfoChangeForm, BindingResult bindingResult) {
+        accessToken = accessTokenValidityCheck(accessToken);
+
+        try {
+            memberService.changeNickname(accessToken, memberInfoChangeForm.getNickname());
+        } catch (DuplicateNicknameException e) {
+            bindingResult.addError(e.getFieldError("memberInfoChangeForm"));
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(bindingResult.getAllErrors());
+        }
+
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
+
+    private String accessTokenValidityCheck(String accessToken) {
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new RuntimeException("토큰이 존재하지 않습니다.");
+        }
+        if (!accessToken.startsWith("Bearer ")) {
+            throw new RuntimeException("토큰이 올바르지 않습니다.");
+        }
+        return accessToken.substring(7);
     }
 
 }
