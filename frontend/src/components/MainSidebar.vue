@@ -67,7 +67,7 @@ const searchMenuChange = () => {
         <side-bar-sub-button>나의 관심그룹</side-bar-sub-button>
         <side-bar-sub-button>회원정보 수정</side-bar-sub-button>
         <side-bar-sub-button>비밀번호 변경</side-bar-sub-button>
-        <side-bar-sub-button>로그아웃</side-bar-sub-button>
+        <side-bar-sub-button @click="logout">로그아웃</side-bar-sub-button>
       </template>
     </side-bar-button>
     <side-bar-button>
