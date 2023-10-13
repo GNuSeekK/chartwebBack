@@ -3,20 +3,24 @@
 </script>
 
 <template>
-<div class="button">
-  <div class="icon">
-    <slot name="default"></slot>
+  <div>
+    <div class="button">
+      <div class="icon">
+        <slot name="default"></slot>
+      </div>
+      <div class="text">
+        <slot name="text"></slot>
+      </div>
+    </div>
+    <slot name="sub"></slot>
   </div>
-  <div class="text">
-    <slot name="text"></slot>
-  </div>
-</div>
 </template>
 
 <style scoped>
 
 .button {
-  background-color: #2090a9;
+  background-color: #0a2767;
+  //background-color: #2090a9;
   color: #dadee0;
   display: flex;
   justify-content: left;
@@ -24,7 +28,7 @@
 
 .button:focus,
 .button:hover {
-  background-color: #30b2cc;
+  background-color: #0e164d;
 }
 
 .icon {

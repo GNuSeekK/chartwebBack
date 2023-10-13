@@ -20,6 +20,7 @@ import stock.chart.domain.base.BaseTimeEntity;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Builder
 public class RefreshToken implements Persistable<String> {
 
     public RefreshToken(String refreshToken, RefreshTokenStatus status, Member member) {

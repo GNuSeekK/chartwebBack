@@ -8,13 +8,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import stock.chart.domain.base.BaseTimeEntity;
 
 @Entity
 @Getter
-@Setter
+@Builder
 public class MemberInterestGroup extends BaseTimeEntity {
 
     @Id
@@ -40,4 +41,7 @@ public class MemberInterestGroup extends BaseTimeEntity {
         memberInterestStock.setMemberInterestGroup(this);
     }
 
+    public void setMember(Member member) {
+        this.member = member;
+    }
 }

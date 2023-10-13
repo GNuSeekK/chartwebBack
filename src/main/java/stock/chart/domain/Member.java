@@ -25,7 +25,6 @@ import stock.chart.domain.base.BaseTimeEntity;
 
 @Entity
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -40,7 +39,7 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name= "member_id")
+    @Column(name = "member_id")
     private Long id;
 
     @NotBlank
@@ -56,7 +55,6 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
     @OneToMany(mappedBy = "member")
     private List<MemberInterestGroup> memberInterestGroups;
-
 
 
     /**
@@ -101,5 +99,13 @@ public class Member extends BaseTimeEntity implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
+
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
     }
 }
