@@ -28,7 +28,8 @@ public class TestDataInit {
         memberRepository.save(member);
         memberRepository.save(member2);
 
-    }////// test
-    ////tesetetssetset
+        ///////asdfasdfsadf
+
+    }
 
 }
