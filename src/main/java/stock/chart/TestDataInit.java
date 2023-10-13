@@ -18,7 +18,7 @@ public class TestDataInit {
     /**
      * 확인용 초기 데이터 추가
      */
-    //test test
+    //test test test
     @EventListener(ApplicationReadyEvent.class)
     public void initData() {
 
