@@ -9,12 +9,15 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import stock.chart.domain.Member;
 import stock.chart.domain.RefreshToken;
 import stock.chart.domain.RefreshTokenStatus;
 import stock.chart.login.dto.LoginMemberForm;
 import stock.chart.login.dto.UsedTokenError;
 import stock.chart.login.exception.MemberNotMatchException;
+import stock.chart.login.exception.RefreshTokenInvalidException;
+import stock.chart.login.exception.UsedTokenException;
 import stock.chart.login.repository.LoginMemberRepository;
 import stock.chart.login.repository.RefreshTokenRepository;
 import stock.chart.security.JwtTokenProvider;
@@ -26,6 +29,7 @@ import stock.chart.security.dto.TokenInfo;
 @Slf4j
 public class LoginMemberService {
 
+    private final TransactionTemplate transactionTemplate;
     private final LoginMemberRepository loginMemberRepository;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -51,11 +55,11 @@ public class LoginMemberService {
         return tokenInfo;
     }
 
-    @Transactional
-    public Object reissue(String refreshToken) {
+    @Transactional(noRollbackFor = UsedTokenException.class) // UsedTokenException 발생시 rollback 하지 않음
+    public TokenInfo reissue(String refreshToken) {
         log.info("reissue start");
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new RuntimeException("Refresh Token이 유효하지 않습니다.");
+            throw new RefreshTokenInvalidException();
         }
 
         // Refresh Token Rotation 기법 사용, 유효한 Refresh Token인지 확인
@@ -63,20 +67,15 @@ public class LoginMemberService {
         // 유효할 경우 Refresh Token 가져와서 사용
         RefreshToken refreshTokenEntity = refreshTokenRotation(refreshToken);
         if (refreshTokenEntity.getStatus() == RefreshTokenStatus.INVALID) {
-            return new UsedTokenError("토큰 탈취 에러", HttpStatus.BAD_REQUEST.toString(), "Refresh Token이 이미 사용되었습니다.");
+            throw new UsedTokenException();
         }
         refreshTokenEntity.updateStatus(RefreshTokenStatus.INVALID);
-
-        log.info(jwtTokenProvider.getMemberId(refreshToken));
         // 3. 토큰 생성
-        TokenInfo tokenInfo = createNewToken(jwtTokenProvider.getMemberId(refreshToken),
+        TokenInfo token = createNewToken(jwtTokenProvider.getMemberId(refreshToken),
             refreshTokenEntity.getMember().getPassword());
-
         // 4. 저장소에 Refresh Token 저장
-        saveRefreshToken(tokenInfo, refreshTokenEntity.getMember());
-
-        log.info("tokenInfo: {}", tokenInfo);
-        return tokenInfo;
+        saveRefreshToken(token, refreshTokenEntity.getMember());
+        return token;
     }
 
     /**

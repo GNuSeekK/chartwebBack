@@ -10,6 +10,7 @@ import stock.chart.member.dto.MemberInfoDto;
 import stock.chart.member.dto.SignUpForm;
 import stock.chart.member.exception.DuplicateEmailException;
 import stock.chart.member.exception.DuplicateNicknameException;
+import stock.chart.member.exception.InvalidMemberException;
 import stock.chart.member.exception.PasswordNotMatchException;
 import stock.chart.member.repository.MemberRepository;
 import stock.chart.security.JwtTokenProvider;
@@ -25,13 +26,12 @@ public class MemberService {
 
     public MemberInfoDto getMemberInfo(String accessToken) {
         Long id = Long.valueOf(jwtTokenProvider.getMemberId(accessToken));
-        return memberRepository.findMemberDtoById(id)
-            .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+        return getMemberInfo(id);
     }
 
     public MemberInfoDto getMemberInfo(Long id) {
         return memberRepository.findMemberDtoById(id)
-            .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+            .orElseThrow(InvalidMemberException::new);
     }
 
     @Transactional
@@ -50,38 +50,46 @@ public class MemberService {
 
     @Transactional
     public Long deleteMember(DeleteMemberForm deleteMemberForm) {
-        Member member = memberRepository.findByEmail(deleteMemberForm.getEmail())
-            .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
-        log.info("member : {}", member);
-        if (!member.getPassword().equals(deleteMemberForm.getPassword())) {
-            throw new PasswordNotMatchException();
-        }
+        Member member = getMemberByEmail(deleteMemberForm.getEmail());
+        passwordCheck(deleteMemberForm.getPassword(), member);
         memberRepository.delete(member);
         return member.getId();
     }
 
     @Transactional
     public Long changePassword(String email, String password, String newPassword) {
-        Member member = memberRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
-        if (!member.getPassword().equals(password)) {
-            throw new PasswordNotMatchException();
-        }
-
+        Member member = getMemberByEmail(email);
+        passwordCheck(password, member);
         member.changePassword(newPassword);
         return member.getId();
     }
 
 
+
     @Transactional
     public Long changeNickname(String accessToken, String nickname) {
         Long id = Long.valueOf(jwtTokenProvider.getMemberId(accessToken));
-        Member member = memberRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+        Member member = getMemberById(id);
         member.changeNickname(nickname);
         if (memberRepository.findByNickname(nickname).isPresent()) {
             throw new DuplicateNicknameException();
         }
         return member.getId();
+    }
+
+    private Member getMemberById(Long id) {
+        return memberRepository.findById(id)
+            .orElseThrow(InvalidMemberException::new);
+    }
+
+    private Member getMemberByEmail(String email) {
+        return memberRepository.findByEmail(email)
+            .orElseThrow(InvalidMemberException::new);
+    }
+
+    private void passwordCheck(String password, Member member) {
+        if (!member.getPassword().equals(password)) {
+            throw new PasswordNotMatchException();
+        }
     }
 }
