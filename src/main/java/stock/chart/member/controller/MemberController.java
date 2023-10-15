@@ -3,11 +3,9 @@ package stock.chart.member.controller;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.exception.DataException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,11 +18,9 @@ import stock.chart.member.dto.MemberInfoChangeForm;
 import stock.chart.member.dto.MemberInfoDto;
 import stock.chart.member.dto.PasswordChangeForm;
 import stock.chart.member.dto.SignUpForm;
-import stock.chart.member.exception.DuplicateEmailException;
-import stock.chart.member.exception.DuplicateMemberException;
-import stock.chart.member.exception.DuplicateNicknameException;
 import stock.chart.member.exception.PasswordNotMatchException;
 import stock.chart.member.service.MemberService;
+import stock.chart.security.exception.AccessTokenInvalidException;
 
 @Slf4j
 @RestController
@@ -41,22 +37,14 @@ public class MemberController {
     }
 
     /**
-     * 로그인 폼 확인 필요하면 400, 중복일 경우 409, 성공시 200
+     * 회원가입 폼 확인 필요하면 400, 중복일 경우 409, 성공시 200
      */
     @PostMapping
     public ResponseEntity registerMember(@Valid @RequestBody SignUpForm signUpForm, BindingResult bindingResult) {
         log.info("signUpForm : {}", signUpForm);
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
-        }
         MemberInfoDto memberInfoDto;
-        try {
-            Long id = memberService.registerMember(signUpForm);
-            memberInfoDto = memberService.getMemberInfo(id);
-        } catch (DuplicateMemberException e) {
-            bindingResult.addError(e.getFieldError("signUpForm"));
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(bindingResult.getAllErrors());
-        }
+        Long id = memberService.registerMember(signUpForm);
+        memberInfoDto = memberService.getMemberInfo(id);
         return ResponseEntity.ok().body(memberInfoDto);
     }
 
@@ -66,17 +54,7 @@ public class MemberController {
     @PostMapping("/delete")
     public ResponseEntity deleteMember(@Valid @RequestBody DeleteMemberForm deleteMemberForm,
         BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
-        }
-
-        try {
-            memberService.deleteMember(deleteMemberForm);
-        } catch (PasswordNotMatchException e) {
-            bindingResult.addError(e.getFieldError("deleteMemberForm"));
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(bindingResult.getAllErrors());
-        }
-
+        memberService.deleteMember(deleteMemberForm);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -88,49 +66,33 @@ public class MemberController {
         BindingResult bindingResult) {
 
         if (!passwordChangeForm.getNewPassword().equals(passwordChangeForm.getNewPasswordConfirm())) {
-            bindingResult.addError(new FieldError("passwordChangeForm", "newPasswordConfirm", "비밀번호를 확인해 주세요."));
+            throw new PasswordNotMatchException();
         }
 
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(bindingResult.getAllErrors());
-        }
-
-        try {
-            memberService.changePassword(passwordChangeForm.getEmail(), passwordChangeForm.getPassword(),
-                passwordChangeForm.getNewPassword());
-        } catch (PasswordNotMatchException e) {
-            bindingResult.addError(e.getFieldError("passwordChangeForm"));
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(bindingResult.getAllErrors());
-        }
-
+        memberService.changePassword(passwordChangeForm.getEmail(), passwordChangeForm.getPassword(),
+            passwordChangeForm.getNewPassword());
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     /**
-     * 닉네임 변경은 회원에 막대한 영향 끼치지 않으므로 accessToken만 확인하고 202 반환
-     * 만약 닉네임 중복일 경우에는 409 반환
+     * 닉네임 변경은 회원에 막대한 영향 끼치지 않으므로 accessToken만 확인하고 202 반환 만약 닉네임 중복일 경우에는 409 반환
      */
     @PatchMapping("/nickname")
     public ResponseEntity changeNickname(@RequestHeader("Authorization") String accessToken, @RequestBody
-        MemberInfoChangeForm memberInfoChangeForm, BindingResult bindingResult) {
+    MemberInfoChangeForm memberInfoChangeForm, BindingResult bindingResult) {
         accessToken = accessTokenValidityCheck(accessToken);
 
-        try {
-            memberService.changeNickname(accessToken, memberInfoChangeForm.getNickname());
-        } catch (DuplicateNicknameException e) {
-            bindingResult.addError(e.getFieldError("memberInfoChangeForm"));
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(bindingResult.getAllErrors());
-        }
+        memberService.changeNickname(accessToken, memberInfoChangeForm.getNickname());
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
     private String accessTokenValidityCheck(String accessToken) {
         if (accessToken == null || accessToken.isEmpty()) {
-            throw new RuntimeException("토큰이 존재하지 않습니다.");
+            throw new AccessTokenInvalidException();
         }
         if (!accessToken.startsWith("Bearer ")) {
-            throw new RuntimeException("토큰이 올바르지 않습니다.");
+            throw new AccessTokenInvalidException();
         }
         return accessToken.substring(7);
     }

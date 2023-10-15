@@ -53,8 +53,11 @@ public class Member extends BaseTimeEntity implements UserDetails {
     @Column(unique = true)
     private String nickname;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", cascade = javax.persistence.CascadeType.ALL, orphanRemoval = true)
     private List<MemberInterestGroup> memberInterestGroups;
+
+    @OneToMany(mappedBy = "member", cascade = javax.persistence.CascadeType.ALL, orphanRemoval = true)
+    private List<RefreshToken> refreshTokens;
 
 
     /**
