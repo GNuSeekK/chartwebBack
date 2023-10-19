@@ -40,7 +40,7 @@ public class MemberController {
      * 회원가입 폼 확인 필요하면 400, 중복일 경우 409, 성공시 200
      */
     @PostMapping
-    public ResponseEntity registerMember(@Valid @RequestBody SignUpForm signUpForm, BindingResult bindingResult) {
+    public ResponseEntity<MemberInfoDto> registerMember(@Valid @RequestBody SignUpForm signUpForm, BindingResult bindingResult) {
         log.info("signUpForm : {}", signUpForm);
         MemberInfoDto memberInfoDto;
         Long id = memberService.registerMember(signUpForm);
@@ -52,7 +52,7 @@ public class MemberController {
      * 성공 204, 403 비밀번호 불일치, 400 폼 입력 에러, 404 존재하지 않는 회원
      */
     @PostMapping("/delete")
-    public ResponseEntity deleteMember(@Valid @RequestBody DeleteMemberForm deleteMemberForm,
+    public ResponseEntity<String> deleteMember(@Valid @RequestBody DeleteMemberForm deleteMemberForm,
         BindingResult bindingResult) {
         memberService.deleteMember(deleteMemberForm);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -62,7 +62,7 @@ public class MemberController {
      * 성공 202, 403 비밀번호 불일치, 400 폼 입력 에러, 404 존재하지 않는 회원
      */
     @PatchMapping("/password")
-    public ResponseEntity changePassword(@Valid @RequestBody PasswordChangeForm passwordChangeForm,
+    public ResponseEntity<String> changePassword(@Valid @RequestBody PasswordChangeForm passwordChangeForm,
         BindingResult bindingResult) {
 
         if (!passwordChangeForm.getNewPassword().equals(passwordChangeForm.getNewPasswordConfirm())) {
@@ -78,7 +78,7 @@ public class MemberController {
      * 닉네임 변경은 회원에 막대한 영향 끼치지 않으므로 accessToken만 확인하고 202 반환 만약 닉네임 중복일 경우에는 409 반환
      */
     @PatchMapping("/nickname")
-    public ResponseEntity changeNickname(@RequestHeader("Authorization") String accessToken, @RequestBody
+    public ResponseEntity<String> changeNickname(@RequestHeader("Authorization") String accessToken, @RequestBody
     MemberInfoChangeForm memberInfoChangeForm, BindingResult bindingResult) {
         accessToken = accessTokenValidityCheck(accessToken);
 

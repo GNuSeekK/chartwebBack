@@ -17,27 +17,27 @@ public class MemberControllerAdvice {
     }
 
     @ExceptionHandler(InvalidMemberException.class)
-    public ResponseEntity invalidMemberException(InvalidMemberException e) {
+    public ResponseEntity<List<FieldError>> invalidMemberException(InvalidMemberException e) {
         return ResponseEntity.badRequest().body(makeListErrors("memberInfoChangeForm", "member", e.getMessage()));
     }
 
     @ExceptionHandler(DuplicateEmailException.class)
-    public ResponseEntity duplicateEmailException(DuplicateEmailException e) {
+    public ResponseEntity<List<FieldError>> duplicateEmailException(DuplicateEmailException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(makeListErrors("signUpForm", "email", e.getMessage()));
     }
 
     @ExceptionHandler(DuplicateNicknameException.class)
-    public ResponseEntity duplicateNicknameException(DuplicateNicknameException e) {
+    public ResponseEntity<List<FieldError>> duplicateNicknameException(DuplicateNicknameException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(makeListErrors("signUpForm", "nickname", e.getMessage()));
     }
 
     @ExceptionHandler(PasswordNotMatchException.class)
-    public ResponseEntity passwordNotMatchException(PasswordNotMatchException e) {
+    public ResponseEntity<List<FieldError>> passwordNotMatchException(PasswordNotMatchException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(makeListErrors("passwordChangeForm", "password", e.getMessage()));
     }
 
     @ExceptionHandler(PasswordConfirmException.class)
-    public ResponseEntity passwordConfirmException(PasswordConfirmException e) {
+    public ResponseEntity<List<FieldError>> passwordConfirmException(PasswordConfirmException e) {
         return ResponseEntity.badRequest().body(makeListErrors("passwordChangeForm", "newPasswordConfirm", e.getMessage()));
     }
 

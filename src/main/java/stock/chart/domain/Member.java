@@ -53,6 +53,10 @@ public class Member extends BaseTimeEntity implements UserDetails {
     @Column(unique = true)
     private String nickname;
 
+    @Column(unique = true)
+    private String kakaoEmail;
+
+
     @OneToMany(mappedBy = "member", cascade = javax.persistence.CascadeType.ALL, orphanRemoval = true)
     private List<MemberInterestGroup> memberInterestGroups;
 
@@ -110,5 +114,9 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
     public void changeNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void changeKakaoEmail(String email) {
+        this.kakaoEmail = email;
     }
 }

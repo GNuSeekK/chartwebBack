@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -34,10 +35,22 @@ public class LoginMemberController {
     private final LoginMemberService loginMemberService;
 
     @PostMapping("/member")
-    public ResponseEntity loginTest(@Validated @RequestBody LoginMemberForm loginMemberForm
+    public ResponseEntity<TokenInfo> login(@Validated @RequestBody LoginMemberForm loginMemberForm
         , BindingResult bindingResult, HttpServletResponse response) {
         // loginMemberForm에 대한 검증 , 400 에러
         TokenInfo token = loginMemberService.login(loginMemberForm);
+        response.setHeader("Set-Cookie",
+            "refreshToken=" + token.getRefreshToken() + "; Path=/; HttpOnly; Secure; Max-Age=" + refreshTokenExpired);
+        return ResponseEntity.ok(token);
+    }
+
+    /**
+     * 카카오 로그인
+     */
+    @GetMapping("/kakao")
+    public ResponseEntity<TokenInfo> kakaoLogin(@Param("code") String code, HttpServletResponse response) {
+        log.info("code: {}", code);
+        TokenInfo token = loginMemberService.kakaoLogin(code);
         response.setHeader("Set-Cookie",
             "refreshToken=" + token.getRefreshToken() + "; Path=/; HttpOnly; Secure; Max-Age=" + refreshTokenExpired);
         return ResponseEntity.ok(token);
@@ -49,7 +62,7 @@ public class LoginMemberController {
     }
 
     @GetMapping("/token/reissue")
-    public ResponseEntity reissueAccessToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<TokenInfo> reissueAccessToken(HttpServletRequest request, HttpServletResponse response) {
         log.info("reissueAccessToken start");
         Cookie refreshToken = WebUtils.getCookie(request, "refreshToken");
         log.info("refreshToken: {}", refreshToken);
