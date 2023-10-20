@@ -25,6 +25,9 @@ public class Stock extends BaseTimeEntity implements Persistable<String> {
     @Column(name = "stock_code")
     private String code;
 
+
+
+
     @NotNull
     private String name;
 
