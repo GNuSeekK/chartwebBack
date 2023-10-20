@@ -1,11 +1,9 @@
 package stock.chart.domain;
 
 import com.sun.istack.NotNull;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
+
+import javax.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.domain.Persistable;
 import stock.chart.domain.base.BaseTimeEntity;
+import java.util.List;
 
 
 @NoArgsConstructor
@@ -29,8 +28,8 @@ public class Stock extends BaseTimeEntity implements Persistable<String> {
     @NotNull
     private String name;
 
-    @OneToOne(mappedBy = "stock", fetch = javax.persistence.FetchType.LAZY)
-    private Board board;
+    @OneToMany(mappedBy = "stock", fetch = javax.persistence.FetchType.LAZY)
+    private List<Board> board;
 
     @Override
     public String getId() {
@@ -45,9 +44,8 @@ public class Stock extends BaseTimeEntity implements Persistable<String> {
     /**
      * 양방향 연관관계 어시스트 메서드
      */
-    public void setBoard() {
-        this.board = new Board();
-        this.board.setStock(this);
+    public void setBoard(Board board) {
+        this.board.add(board);
     }
 
 }

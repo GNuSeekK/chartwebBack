@@ -33,7 +33,7 @@ public class Board extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToOne(fetch = javax.persistence.FetchType.LAZY)
+    @ManyToOne(fetch = javax.persistence.FetchType.LAZY)
     @JoinColumn(name = "stock_code")
     private Stock stock;
 

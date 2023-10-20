@@ -28,6 +28,9 @@ public class TestDataInit {
         memberRepository.save(member);
         memberRepository.save(member2);
 
+
+
+
         ///////asdfasdfsadf
 
     }

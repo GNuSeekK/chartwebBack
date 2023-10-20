@@ -33,11 +33,12 @@ public class SecurityConfig {
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .antMatchers("/login/member").permitAll() // 해당 API 모든 요청 허가
             .antMatchers("/login/token/reissue").permitAll() // 해당 API 모든 요청 허가
-            .antMatchers("/login/test").authenticated()
+            .antMatchers("/login/test").permitAll()
             .antMatchers("/member/delete").permitAll()
             .antMatchers("/member/password").permitAll()
             .antMatchers("/member").permitAll()
             .antMatchers("/member/**").authenticated()
+            .antMatchers("/stock").permitAll()
 //            .anyRequest().authenticated()
             .and()
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, objectMapper), UsernamePasswordAuthenticationFilter.class);
