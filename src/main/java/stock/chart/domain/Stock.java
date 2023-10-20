@@ -15,6 +15,8 @@ import org.springframework.data.domain.Persistable;
 import stock.chart.domain.base.BaseTimeEntity;
 
 
+
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
