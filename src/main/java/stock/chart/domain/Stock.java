@@ -14,6 +14,8 @@ import stock.chart.domain.base.BaseTimeEntity;
 import java.util.List;
 
 
+
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -24,7 +26,6 @@ public class Stock extends BaseTimeEntity implements Persistable<String> {
     @Id
     @Column(name = "stock_code")
     private String code;
-
 
     @NotNull
     private String name;

@@ -8,8 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import stock.chart.domain.StockDateId;
 import stock.chart.member.service.MemberService;
 import stock.chart.stock.service.StockService;
+
+import java.time.LocalDate;
 
 @Slf4j
 @RestController
@@ -18,15 +21,36 @@ import stock.chart.stock.service.StockService;
 public class StockInfoController {
     private final StockService stockService;
 
-    @GetMapping("/info")
-    public Object getStockInfo(String code) {
+    @GetMapping("/search")
+    public Object getStockName(String code) {
         try{
-            return stockService.getStockInfo(code);
+            return stockService.getStockName(code);
         }catch (RuntimeException e){
             //검색한 코드가 없을 때 보내는 no_content 에러?
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
+    }
 
+    @GetMapping("/info")
+    public Object getStock(String code) {
+        try{
+            return stockService.getStock(code);
+        }catch (RuntimeException e){
+            //검색한 코드가 없을 때 보내는 no_content 에러?
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+    }
+
+
+    @GetMapping("/price")
+    public Object getStockPrice(String code, LocalDate start, LocalDate end) {
+        try{
+            //list로 return
+            return stockService.getStockPrice(code, start, end);
+        }catch (RuntimeException e){
+            //검색한 코드가 없을 때 보내는 no_content 에러?
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
     }
 
 
