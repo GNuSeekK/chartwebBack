@@ -2,14 +2,18 @@ package stock.chart.domain;
 
 
 import com.sun.istack.NotNull;
-
-import javax.persistence.*;
+import java.util.Objects;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapsId;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.domain.Persistable;
 import stock.chart.domain.base.BaseTimeEntity;
 

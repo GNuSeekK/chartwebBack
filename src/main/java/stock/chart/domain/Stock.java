@@ -1,16 +1,23 @@
 package stock.chart.domain;
 
 import com.sun.istack.NotNull;
-
-import javax.persistence.*;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.domain.Persistable;
 import stock.chart.domain.base.BaseTimeEntity;
+import stock.chart.domain.redis.CashStock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +34,15 @@ public class Stock extends BaseTimeEntity implements Persistable<String> {
     @Id
     @Column(name = "stock_code")
     private String code;
+
+
     @NotNull
     private String name;
+
+    public Stock(String code, String name) {
+        this.code = code;
+        this.name = name;
+    }
 
 
     @OneToMany(mappedBy = "stock", fetch = FetchType.LAZY)
@@ -49,6 +63,22 @@ public class Stock extends BaseTimeEntity implements Persistable<String> {
      */
     public void setBoard(Board board) {
         this.board.add(board);
+    }
+
+    public void addStockPrice(StockPrice stockPrice) {
+        this.stockPrices.add(stockPrice);
+        stockPrice.setStock(this);
+    }
+
+    public CashStock toCashStock() {
+        return CashStock.builder()
+            .code(this.code)
+            .name(this.name)
+            .cashStockPriceList(
+                this.stockPrices.stream()
+                    .map(StockPrice::toCashStockPrice)
+                    .collect(Collectors.toList()))
+            .build();
     }
 
     @Override
