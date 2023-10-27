@@ -19,6 +19,7 @@ public class StockCashPriority {
     @Indexed
     private String code;
     private int priority;
+    private int saveFlag = 0;
 
     @TimeToLive
     private Long expiration;
@@ -26,5 +27,9 @@ public class StockCashPriority {
     public void updatePriorityAndExpiration(Long expiration) {
         this.priority--;
         this.expiration = expiration;
+    }
+
+    public void setSaveFlag(int saveFlag) {
+        this.saveFlag = saveFlag;
     }
 }

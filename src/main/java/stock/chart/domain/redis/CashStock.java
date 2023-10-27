@@ -1,7 +1,10 @@
 package stock.chart.domain.redis;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,17 +20,16 @@ import stock.chart.stock.dto.StockPriceDto;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CashStock {
+public class CashStock implements Serializable {
 
     @Id
     @Indexed
     private String code;
-    private String name;
 
-    private List<CashStockPrice> cashStockPriceList = new ArrayList<>();
+    private Set<CashStockPrice> cashStockPricesSet = new HashSet<>();
 
     public List<StockPriceDto> getStockPrices() {
-        return cashStockPriceList.stream()
+        return cashStockPricesSet.parallelStream()
             .map(CashStockPrice::toStockPriceDto)
             .collect(Collectors.toList());
     }

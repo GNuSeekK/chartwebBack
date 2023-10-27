@@ -1,6 +1,7 @@
 package stock.chart.domain.redis;
 
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,9 @@ import stock.chart.stock.dto.StockPriceDto;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CashStockPrice {
+public class CashStockPrice implements Comparable<CashStockPrice>, Serializable {
+
+
 
     @Id
     private String code;
@@ -36,5 +39,10 @@ public class CashStockPrice {
             .close(close)
             .volume(volume)
             .build();
+    }
+
+    @Override
+    public int compareTo(CashStockPrice o) {
+        return this.originalDate.compareTo(o.originalDate);
     }
 }

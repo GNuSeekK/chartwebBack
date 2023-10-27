@@ -73,11 +73,10 @@ public class Stock extends BaseTimeEntity implements Persistable<String> {
     public CashStock toCashStock() {
         return CashStock.builder()
             .code(this.code)
-            .name(this.name)
-            .cashStockPriceList(
+            .cashStockPricesSet(
                 this.stockPrices.stream()
                     .map(StockPrice::toCashStockPrice)
-                    .collect(Collectors.toList()))
+                    .collect(Collectors.toSet()))
             .build();
     }
 

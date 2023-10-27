@@ -1,6 +1,7 @@
 package stock.chart.stock.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,37 +46,44 @@ public class StockService {
 
     public List<StockPriceDto> getStockPrice(String code, LocalDate start, LocalDate end) {
 
+        Optional<StockCashPriority> cashPriority = stockCashPriorityRepository.findByCode(code);
         List<StockPriceDto> redisData = checkStockCashing(code, start, end);
-        if (redisData != null) {
-            return redisData;
+        if (redisData != null && cashPriority.isPresent()) {
+            if (cashPriority.get().getSaveFlag() == 1) {
+                log.info("cashPriority.get().getSaveFlag() == {}", cashPriority.get().getSaveFlag());
+                return redisData;
+            }
+            if (cashPriority.get().getPriority() == 1) {
+                return stockPriceRepository.findAll(code, start, end)
+                    .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."))
+                    .parallelStream()
+                    .map(StockPrice::toStockPriceDto)
+                    .collect(Collectors.toList());
+            }
         }
-        List<StockPriceDto> stock = updateStockCashing(code, start, end);
+        List<StockPriceDto> stock = updateStockCashing(cashPriority, code, start, end);
         if (stock != null) {
             return stock;
         }
         List<StockPrice> stockPrices = stockPriceRepository.findAll(code, start, end)
             .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."));
-        return stockPrices.stream()
+        return stockPrices.parallelStream()
             .map(StockPrice::toStockPriceDto)
             .collect(Collectors.toList());
     }
 
-    private List<StockPriceDto> updateStockCashing(String code, LocalDate start, LocalDate end) {
-        Optional<StockCashPriority> cashPriority = stockCashPriorityRepository.findByCode(code);
+    private List<StockPriceDto> updateStockCashing(Optional<StockCashPriority> cashPriority, String code,
+        LocalDate start, LocalDate end) {
         if (cashPriority.isPresent()) { // 우선순위에 들어가 있으면
             if (cashPriority.get().getPriority() == 1) {
                 log.info("우선순위가 1입니다.");
                 // 우선순위가 1이면 redis에 저장
                 Stock stock = stockRepository.findStockByIdWithStockPrices(code)
                     .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."));
-                redisStockRepository.save(CashStock.builder()
-                    .code(code)
-                    .name(stock.getName())
-                    .cashStockPriceList(stock.getStockPrices().stream()
-                        .map(StockPrice::toCashStockPrice)
-                        .collect(Collectors.toList()))
-                    .build());
-                return stock.getStockPrices().stream()
+                redisStockRepository.saveSortedSet(code, stock.getStockPrices().stream()
+                    .map(StockPrice::toCashStockPrice)
+                    .collect(Collectors.toSet()));
+                return stock.getStockPrices().parallelStream()
                     .filter(stockPrice -> stockPrice.getId().getDate().isAfter(start.minusDays(1)) && stockPrice.getId()
                         .getDate().isBefore(end.plusDays(1)))
                     .map(StockPrice::toStockPriceDto)
@@ -100,29 +108,8 @@ public class StockService {
     }
 
     private List<StockPriceDto> checkStockCashing(String code, LocalDate start, LocalDate end) {
-        Optional<CashStock> redisData = redisStockRepository.findByCode(code);
-        if (redisData.isPresent()) { // 데이터가 레디스에 있으면, 바로 리턴
-            LocalDate newStart = start.minusDays(1);
-            LocalDate newEnd = end.plusDays(1);
-            return redisData.get().getStockPrices().stream()
-                .filter(stockPriceDto -> stockPriceDto.getDate().isAfter(newStart) && stockPriceDto.getDate()
-                    .isBefore(newEnd))
-                .collect(Collectors.toList());
-        }
-        return null;
-    public List<StockPriceDto> getStockPrice(StockPriceParam stockPriceParam) {
-        String code = stockPriceParam.getCode();
-        LocalDate start = stockPriceParam.getStart();
-        LocalDate end = stockPriceParam.getEnd();
-
-        //주식코드 검증
-        getStock(code);
-
-        if(start == null || end == null){ //데이터가 없으면 최근 1년 정보
-            end = LocalDate.now();
-            start = end.minusYears(1);
-        }
-        return stockPriceRepository.findAll(code, start, end)
-                .orElseThrow(StockNotFoundException::new);
+        Optional<CashStock> redisData = redisStockRepository.getCashStockWithSortedStockPrice(code, start, end);
+        // 데이터가 레디스에 있으면, 바로 리턴
+        return redisData.map(cashStock -> new ArrayList<>(cashStock.getStockPrices())).orElse(null);
     }
 }
