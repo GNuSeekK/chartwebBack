@@ -38,7 +38,7 @@ public class SecurityConfig {
             .antMatchers("/member/password").permitAll()
             .antMatchers("/member").permitAll()
             .antMatchers("/member/**").authenticated()
-            .antMatchers("/stock").permitAll()
+            .antMatchers("/stock/**").permitAll()
 //            .anyRequest().authenticated()
             .and()
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, objectMapper), UsernamePasswordAuthenticationFilter.class);

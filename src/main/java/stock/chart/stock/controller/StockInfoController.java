@@ -2,14 +2,12 @@ package stock.chart.stock.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import stock.chart.domain.StockDateId;
-import stock.chart.member.service.MemberService;
 import stock.chart.stock.service.StockService;
 
 import java.time.LocalDate;
@@ -43,7 +41,7 @@ public class StockInfoController {
 
 
     @GetMapping("/price")
-    public Object getStockPrice(String code, LocalDate start, LocalDate end) {
+    public Object getStockPrice(String code, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate start, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate end) {
         try{
             //list로 return
             return stockService.getStockPrice(code, start, end);
