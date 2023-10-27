@@ -78,7 +78,7 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles.stream()
+        return this.roles.parallelStream()
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
     }
