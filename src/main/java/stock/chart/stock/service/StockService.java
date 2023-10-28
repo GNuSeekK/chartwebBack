@@ -3,6 +3,7 @@ package stock.chart.stock.service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,6 @@ public class StockService {
     private final RedisStockRepository redisStockRepository;
     private final StockCashPriorityRepository stockCashPriorityRepository;
 
-    private Long EXPIRATION = 10L;
 
     public StockDataDto getStockName(String code) {
         return stockRepository.findStockNameById(code)
@@ -46,22 +46,17 @@ public class StockService {
 
     public List<StockPriceDto> getStockPrice(String code, LocalDate start, LocalDate end) {
 
-        Optional<StockCashPriority> cashPriority = stockCashPriorityRepository.findByCode(code);
-        List<StockPriceDto> redisData = checkStockCashing(code, start, end);
-        if (redisData != null && cashPriority.isPresent()) {
-            if (cashPriority.get().getSaveFlag() == 1) {
-                log.info("cashPriority.get().getSaveFlag() == {}", cashPriority.get().getSaveFlag());
-                return redisData;
-            }
-            if (cashPriority.get().getPriority() == 1) {
-                return stockPriceRepository.findAll(code, start, end)
-                    .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."))
-                    .parallelStream()
-                    .map(StockPrice::toStockPriceDto)
-                    .collect(Collectors.toList());
-            }
+        Optional<Integer> saveFlag = stockCashPriorityRepository.getSaveFlag(code);
+        if (saveFlag.isPresent() && saveFlag.get() == 1) {
+            log.info("레디스에 저장되어 있습니다.");
+            List<StockPriceDto> redisData = checkStockCashing(code, start, end);
+            return Objects.requireNonNullElseGet(redisData, () -> stockPriceRepository.findAll(code, start, end)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."))
+                .parallelStream()
+                .map(StockPrice::toStockPriceDto)
+                .collect(Collectors.toList()));
         }
-        List<StockPriceDto> stock = updateStockCashing(cashPriority, code, start, end);
+        List<StockPriceDto> stock = updateStockCashing(code, start, end);
         if (stock != null) {
             return stock;
         }
@@ -72,14 +67,22 @@ public class StockService {
             .collect(Collectors.toList());
     }
 
-    private List<StockPriceDto> updateStockCashing(Optional<StockCashPriority> cashPriority, String code,
+    private List<StockPriceDto> updateStockCashing(String code,
         LocalDate start, LocalDate end) {
-        if (cashPriority.isPresent()) { // 우선순위에 들어가 있으면
-            if (cashPriority.get().getPriority() == 1) {
+        Optional<Integer> priority = stockCashPriorityRepository.getPriority(code);
+        if (priority.isPresent()) { // 우선순위에 들어가 있으면
+            if (priority.get() < 1) {
                 log.info("우선순위가 1입니다.");
-                // 우선순위가 1이면 redis에 저장
+                stockCashPriorityRepository.updatePriorityAndExpiration(code);
                 Stock stock = stockRepository.findStockByIdWithStockPrices(code)
                     .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."));
+                Optional<Integer> saveFlag = stockCashPriorityRepository.getSaveFlag(code);
+                if (saveFlag.isPresent() && saveFlag.get() == 1) {
+                    List<StockPriceDto> redisData = checkStockCashing(code, start, end);
+                    if (redisData != null) {
+                        return redisData;
+                    }
+                }
                 redisStockRepository.saveSortedSet(code, stock.getStockPrices().stream()
                     .map(StockPrice::toCashStockPrice)
                     .collect(Collectors.toSet()));
@@ -89,11 +92,10 @@ public class StockService {
                     .map(StockPrice::toStockPriceDto)
                     .collect(Collectors.toList());
             } else {
-                // 우선순위가 1이 아니면 우선순위와 만료시간 업데이트
-                log.info("우선순위가 1이 아닙니다.");
-                cashPriority.get().updatePriorityAndExpiration(EXPIRATION);
-                // save cashPriority
-                stockCashPriorityRepository.save(cashPriority.get());
+                // 우선순위가 1보다 크면
+                log.info("우선순위가 1보다 큽니다.");
+                // 우선순위 1 감소
+                stockCashPriorityRepository.updatePriorityAndExpiration(code);
             }
         } else {
             log.info("우선순위에 없습니다.");
@@ -101,7 +103,6 @@ public class StockService {
             stockCashPriorityRepository.save(StockCashPriority.builder()
                 .code(code)
                 .priority(5)
-                .expiration(EXPIRATION)
                 .build());
         }
         return null;

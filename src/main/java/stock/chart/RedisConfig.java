@@ -1,6 +1,8 @@
 package stock.chart;
 
+import com.fasterxml.jackson.databind.ser.std.NumberSerializers.IntegerSerializer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
@@ -12,11 +14,15 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import stock.chart.domain.redis.CashStock;
+import stock.chart.domain.redis.CashStockPrice;
 import stock.chart.stock.repository.RedisStockRepository;
 import stock.chart.stock.repository.StockCashPriorityRepository;
 
+@Slf4j
 @Configuration
 @EnableRedisRepositories(basePackages = "stock.chart", includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
     RedisStockRepository.class,
@@ -37,8 +43,8 @@ public class RedisConfig {
 
     // Redis template
     @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
+    public RedisTemplate<?, ?> redisTemplate() {
+        RedisTemplate<?, ?> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
@@ -48,16 +54,16 @@ public class RedisConfig {
         return template;
     }
 
-    @Bean(name = "redisPriceTemplate")
-    public RedisTemplate<?, ?> redisPriceTemplate() {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory());
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new JdkSerializationRedisSerializer(getClass().getClassLoader()));
-        template.setValueSerializer(new JdkSerializationRedisSerializer(getClass().getClassLoader()));
-        template.afterPropertiesSet();
-        return template;
-    }
+//    @Bean(name = "redisPriceTemplate")
+//    public RedisTemplate<?, ?> redisPriceTemplate() {
+//        RedisTemplate<String, Object> template = new RedisTemplate<>();
+//        template.setConnectionFactory(redisConnectionFactory());
+//        template.setKeySerializer(new StringRedisSerializer());
+//        template.setHashKeySerializer(new StringRedisSerializer());
+//        template.setHashKeySerializer(new JdkSerializationRedisSerializer(getClass().getClassLoader()));
+//        template.setValueSerializer(new JdkSerializationRedisSerializer(getClass().getClassLoader()));
+//        template.afterPropertiesSet();
+//        return template;
+//    }
 
 }

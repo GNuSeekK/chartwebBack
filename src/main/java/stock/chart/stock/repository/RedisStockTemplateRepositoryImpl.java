@@ -19,14 +19,12 @@ public class RedisStockTemplateRepositoryImpl implements
 
     private final RedisTemplate<String, CashStockPrice> redisPriceTemplate;
     private final ZSetOperations<String, CashStockPrice> zPriceSetOperations;
-    private final RedisTemplate<String, CashStock> redisTemplate;
     private final StockCashPriorityRepository stockCashPriorityRepository;
 
 
-    public RedisStockTemplateRepositoryImpl(RedisTemplate<String, CashStockPrice> redisPriceTemplate, RedisTemplate<String, CashStock> redisTemplate, StockCashPriorityRepository stockCashPriorityRepository) {
+    public RedisStockTemplateRepositoryImpl(RedisTemplate<String, CashStockPrice> redisPriceTemplate, StockCashPriorityRepository stockCashPriorityRepository) {
         this.redisPriceTemplate = redisPriceTemplate;
         this.zPriceSetOperations = redisPriceTemplate.opsForZSet();
-        this.redisTemplate = redisTemplate;
         this.stockCashPriorityRepository = stockCashPriorityRepository;
     }
 
@@ -36,11 +34,7 @@ public class RedisStockTemplateRepositoryImpl implements
         cashStockPricesSet.parallelStream()
             .forEach(cashStockPrice -> zPriceSetOperations.add(key, cashStockPrice, cashStockPrice.getOriginalDate().toEpochDay()));
         log.info("저장이 성공적으로 완료 되었습니다");
-        stockCashPriorityRepository.save(StockCashPriority.builder()
-            .code(key)
-            .priority(0)
-            .saveFlag(1)
-            .build());
+        stockCashPriorityRepository.updateSaveFlag(key, 1);
     }
 
     @Override

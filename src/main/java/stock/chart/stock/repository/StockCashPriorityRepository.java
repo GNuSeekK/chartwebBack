@@ -1,9 +1,19 @@
 package stock.chart.stock.repository;
 
 import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
 import stock.chart.domain.redis.StockCashPriority;
 
-public interface StockCashPriorityRepository extends JpaRepository<StockCashPriority, String> {
+public interface StockCashPriorityRepository {
+
+    void updatePriorityAndExpiration(String code);
+
+    void updateSaveFlag(String code, int saveFlag);
+
     Optional<StockCashPriority> findByCode(String code);
+
+    void save(StockCashPriority stockCashPriority);
+
+    Optional<Integer> getPriority(String code);
+
+    Optional<Integer> getSaveFlag(String code);
 }
