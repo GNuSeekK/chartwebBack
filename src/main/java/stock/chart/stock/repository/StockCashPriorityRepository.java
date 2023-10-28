@@ -16,4 +16,8 @@ public interface StockCashPriorityRepository {
     Optional<Integer> getPriority(String code);
 
     Optional<Integer> getSaveFlag(String code);
+
+    void saveFlag(String code);
+
+    Optional<Integer> getSavingFlag(String code);
 }

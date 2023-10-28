@@ -1,6 +1,7 @@
 package stock.chart.stock.repository;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ public class RedisStockTemplateRepositoryImpl implements
     @Async
     @Override
     public void saveSortedSet(String key, Set<CashStockPrice> cashStockPricesSet) {
+        stockCashPriorityRepository.saveFlag(key);
         cashStockPricesSet.parallelStream()
             .forEach(cashStockPrice -> zPriceSetOperations.add(key, cashStockPrice, cashStockPrice.getOriginalDate().toEpochDay()));
         log.info("저장이 성공적으로 완료 되었습니다");
@@ -45,6 +47,18 @@ public class RedisStockTemplateRepositoryImpl implements
         }
         return Optional.of(CashStock.builder()
             .code(key)
+            .cashStockPricesSet(cashStockPricesSet)
+            .build());
+    }
+
+    @Override
+    public Optional<CashStock> findByCode(String code) {
+        Set<CashStockPrice> cashStockPricesSet = zPriceSetOperations.range(code, 0, -1);
+        if (cashStockPricesSet == null || cashStockPricesSet.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(CashStock.builder()
+            .code(code)
             .cashStockPricesSet(cashStockPricesSet)
             .build());
     }

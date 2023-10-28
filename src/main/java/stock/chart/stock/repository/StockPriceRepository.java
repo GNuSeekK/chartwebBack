@@ -16,5 +16,7 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
     @Query("select sp from StockPrice sp where sp.stock.code = :code and sp.id.date between :start and :end")
     Optional<List<StockPrice>> findAll(@Param("code") String code, @Param("start") LocalDate start, @Param("end") LocalDate end);
 
+    @Query("select sp from StockPrice sp where sp.stock.code = :code")
+    Optional<List<StockPrice>> findByCode(@Param("code") String code);
 
 }

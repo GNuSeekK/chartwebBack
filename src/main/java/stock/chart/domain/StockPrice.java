@@ -28,7 +28,7 @@ public class StockPrice extends BaseTimeEntity implements Persistable<StockDateI
     @EmbeddedId
     private StockDateId id;
 
-    public StockPrice(StockDateId id, int open, int high, int low, int close, Long volume) {
+    public StockPrice(StockDateId id, int open, int high, int low, int close, int volume) {
         this.id = id;
         this.open = open;
         this.high = high;
@@ -73,7 +73,6 @@ public class StockPrice extends BaseTimeEntity implements Persistable<StockDateI
 
     public CashStockPrice toCashStockPrice() {
         return CashStockPrice.builder()
-            .code(this.id.getCode())
             .originalDate(this.id.getDate())
             .open(this.open)
             .high(this.high)

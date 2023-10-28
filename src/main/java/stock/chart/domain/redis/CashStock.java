@@ -30,7 +30,7 @@ public class CashStock implements Serializable {
 
     public List<StockPriceDto> getStockPrices() {
         return cashStockPricesSet.parallelStream()
-            .map(CashStockPrice::toStockPriceDto)
+            .map(cashStockPrice -> cashStockPrice.toStockPriceDto(code))
             .collect(Collectors.toList());
     }
 
