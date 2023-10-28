@@ -15,41 +15,41 @@ import stock.chart.domain.redis.StockCashPriority;
 public class StockCashPriorityRepositoryImpl implements
     StockCashPriorityRepository {
 
-    private final RedisTemplate<String, RedisInteger> priorityTemplate;
-    private final RedisTemplate<String, RedisInteger> flagTemplate;
+    private final RedisTemplate<String, RedisInteger> redisTemplate;
+//    private final RedisTemplate<String, RedisInteger> flagTemplate;
 
     private static final Duration EXPIRATION = Duration.ofSeconds(10);
     private static final String FLAG_KEY = "flag";
     private static final String PRIORITY_KEY = "priority";
+    private static final String SAVING_KEY = "saving";
 
-    public StockCashPriorityRepositoryImpl(RedisTemplate<String, RedisInteger> priorityTemplate,
-        RedisTemplate<String, RedisInteger> flagTemplate) {
-        this.priorityTemplate = priorityTemplate;
-        this.flagTemplate = flagTemplate;
+    public StockCashPriorityRepositoryImpl(RedisTemplate<String, RedisInteger> redisTemplate) {
+        this.redisTemplate = redisTemplate;
     }
 
     @Async
     @Override
     public void updatePriorityAndExpiration(String code) {
 
-        RedisInteger priority = priorityTemplate.opsForValue().get(PRIORITY_KEY + code);
+        RedisInteger priority = redisTemplate.opsForValue().get(PRIORITY_KEY + code);
         if (priority != null) {
             priority.decrease();
-            priorityTemplate.opsForValue().set(PRIORITY_KEY + code, priority, EXPIRATION);
+            redisTemplate.opsForValue().set(PRIORITY_KEY + code, priority, EXPIRATION);
         }
     }
 
     @Override
     public void updateSaveFlag(String code, int saveFlag) {
         RedisInteger flag = new RedisInteger(saveFlag);
-        flagTemplate.opsForValue().set(FLAG_KEY + code, flag);
+        redisTemplate.opsForValue().set(FLAG_KEY + code, flag);
+        // make Value don't update
     }
 
     @Override
     public Optional<StockCashPriority> findByCode(String code) {
 
-        RedisInteger priority = priorityTemplate.opsForValue().get(PRIORITY_KEY + code);
-        RedisInteger flag = flagTemplate.opsForValue().get(FLAG_KEY + code);
+        RedisInteger priority = redisTemplate.opsForValue().get(PRIORITY_KEY + code);
+        RedisInteger flag = redisTemplate.opsForValue().get(FLAG_KEY + code);
 
         if (priority != null && flag != null) {
             return Optional.of(StockCashPriority.builder()
@@ -62,15 +62,28 @@ public class StockCashPriorityRepositoryImpl implements
     }
 
     @Override
+    public void saveFlag(String code) {
+        redisTemplate.opsForValue().set(SAVING_KEY + code, new RedisInteger(0));
+    }
+
+    @Override
     public void save(StockCashPriority stockCashPriority) {
-        priorityTemplate.opsForValue().set(PRIORITY_KEY + stockCashPriority.getCode() , new RedisInteger(stockCashPriority.getPriority()));
-        priorityTemplate.expire(PRIORITY_KEY + stockCashPriority.getCode(), EXPIRATION);
-        flagTemplate.opsForValue().set(FLAG_KEY + stockCashPriority.getCode(), new RedisInteger(stockCashPriority.getSaveFlag()));
+        redisTemplate.opsForValue().set(PRIORITY_KEY + stockCashPriority.getCode() , new RedisInteger(stockCashPriority.getPriority()));
+        redisTemplate.expire(PRIORITY_KEY + stockCashPriority.getCode(), EXPIRATION);
     }
 
     @Override
     public Optional<Integer> getPriority(String code) {
-        RedisInteger result = priorityTemplate.opsForValue().get(PRIORITY_KEY + code);
+        RedisInteger result = redisTemplate.opsForValue().get(PRIORITY_KEY + code);
+        if (result != null) {
+            return Optional.of(result.getValue());
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Integer> getSavingFlag(String code) {
+        RedisInteger result = redisTemplate.opsForValue().get(SAVING_KEY + code);
         if (result != null) {
             return Optional.of(result.getValue());
         }
@@ -79,7 +92,7 @@ public class StockCashPriorityRepositoryImpl implements
 
     @Override
     public Optional<Integer> getSaveFlag(String code) {
-        RedisInteger result = flagTemplate.opsForValue().get(FLAG_KEY + code);
+        RedisInteger result = redisTemplate.opsForValue().get(FLAG_KEY + code);
         if (result != null) {
             return Optional.of(result.getValue());
         }

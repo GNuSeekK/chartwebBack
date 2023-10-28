@@ -18,6 +18,6 @@ public class StockPriceDto {
     private int high;
     private int low;
     private int close;
-    private Long volume;
+    private int volume;
 
 }

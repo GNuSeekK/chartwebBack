@@ -11,4 +11,6 @@ public interface RedisStockTemplateRepository {
     void saveSortedSet(String key, Set<CashStockPrice> cashStockPricesSet);
     Optional<CashStock> getCashStockWithSortedStockPrice(String key, LocalDate startDate, LocalDate endDate);
 
+    Optional<CashStock> findByCode(String code);
+
 }

@@ -11,25 +11,19 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import stock.chart.stock.dto.StockPriceDto;
 
-@RedisHash("cash_stock_price")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CashStockPrice implements Comparable<CashStockPrice>, Serializable {
 
-
-
-    @Id
-    private String code;
     private LocalDate originalDate;
     private int open;
     private int high;
     private int low;
     private int close;
-    private Long volume;
-
-    public StockPriceDto toStockPriceDto() {
+    private int volume;
+    public StockPriceDto toStockPriceDto(String code) {
         return StockPriceDto.builder()
             .code(code)
             .date(originalDate)

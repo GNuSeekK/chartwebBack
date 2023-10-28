@@ -8,6 +8,6 @@ import stock.chart.domain.redis.CashStock;
 
 public interface RedisStockRepository extends JpaRepository<CashStock, String>, RedisStockTemplateRepository {
 
-    Optional<CashStock> findByCode(String code);
+//    Optional<CashStock> findByCode(String code);
 
 }
