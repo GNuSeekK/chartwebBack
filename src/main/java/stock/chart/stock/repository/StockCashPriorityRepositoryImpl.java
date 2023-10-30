@@ -2,10 +2,7 @@ package stock.chart.stock.repository;
 
 import java.time.Duration;
 import java.util.Optional;
-import java.util.Set;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
 import stock.chart.domain.redis.RedisInteger;
@@ -18,7 +15,7 @@ public class StockCashPriorityRepositoryImpl implements
     private final RedisTemplate<String, RedisInteger> redisTemplate;
 //    private final RedisTemplate<String, RedisInteger> flagTemplate;
 
-    private static final Duration EXPIRATION = Duration.ofSeconds(10);
+    private static final Duration EXPIRATION = Duration.ofSeconds(60);
     private static final String FLAG_KEY = "flag";
     private static final String PRIORITY_KEY = "priority";
     private static final String SAVING_KEY = "saving";
@@ -63,12 +60,13 @@ public class StockCashPriorityRepositoryImpl implements
 
     @Override
     public void saveFlag(String code) {
-        redisTemplate.opsForValue().set(SAVING_KEY + code, new RedisInteger(0));
+        redisTemplate.opsForValue().set(SAVING_KEY + code, new RedisInteger(0), EXPIRATION);
     }
 
     @Override
     public void save(StockCashPriority stockCashPriority) {
-        redisTemplate.opsForValue().set(PRIORITY_KEY + stockCashPriority.getCode() , new RedisInteger(stockCashPriority.getPriority()));
+        redisTemplate.opsForValue()
+            .set(PRIORITY_KEY + stockCashPriority.getCode(), new RedisInteger(stockCashPriority.getPriority()));
         redisTemplate.expire(PRIORITY_KEY + stockCashPriority.getCode(), EXPIRATION);
     }
 

@@ -21,12 +21,14 @@ import stock.chart.domain.redis.CashStock;
 import stock.chart.domain.redis.CashStockPrice;
 import stock.chart.stock.repository.RedisStockRepository;
 import stock.chart.stock.repository.StockCashPriorityRepository;
+import stock.chart.stock.repository.TestCashStockRepository;
 
 @Slf4j
 @Configuration
 @EnableRedisRepositories(basePackages = "stock.chart", includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
     RedisStockRepository.class,
-    StockCashPriorityRepository.class}))
+    StockCashPriorityRepository.class,
+    TestCashStockRepository.class}))
 @RequiredArgsConstructor
 public class RedisConfig {
 

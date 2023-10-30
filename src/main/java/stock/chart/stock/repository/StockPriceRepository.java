@@ -19,4 +19,7 @@ public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
     @Query("select sp from StockPrice sp where sp.stock.code = :code")
     Optional<List<StockPrice>> findByCode(@Param("code") String code);
 
+    @Query("select sp from StockPrice sp")
+    Optional<List<StockPrice>> findAllForDummy();
+
 }
