@@ -29,7 +29,7 @@ public class RedisStockTemplateRepositoryImpl implements
         this.stockCashPriorityRepository = stockCashPriorityRepository;
     }
 
-    @Async
+//    @Async
     @Override
     public void saveSortedSet(String key, Set<CashStockPrice> cashStockPricesSet) {
         stockCashPriorityRepository.saveFlag(key);
@@ -41,7 +41,9 @@ public class RedisStockTemplateRepositoryImpl implements
 
     @Override
     public Optional<CashStock> getCashStockWithSortedStockPrice(String key, LocalDate startDate, LocalDate endDate) {
+        long date = System.currentTimeMillis();
         Set<CashStockPrice> cashStockPricesSet = zPriceSetOperations.rangeByScore(key, startDate.toEpochDay(), endDate.toEpochDay());
+        log.info("redis 조회 시간 : {}", System.currentTimeMillis() - date);
         if (cashStockPricesSet == null || cashStockPricesSet.isEmpty()) {
             return Optional.empty();
         }
@@ -53,7 +55,9 @@ public class RedisStockTemplateRepositoryImpl implements
 
     @Override
     public Optional<CashStock> findByCode(String code) {
+        Date date = new Date();
         Set<CashStockPrice> cashStockPricesSet = zPriceSetOperations.range(code, 0, -1);
+        log.info("redis 조회 시간 : {}", new Date().getTime() - date.getTime());
         if (cashStockPricesSet == null || cashStockPricesSet.isEmpty()) {
             return Optional.empty();
         }

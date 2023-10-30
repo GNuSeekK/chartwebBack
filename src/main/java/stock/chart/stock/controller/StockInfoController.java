@@ -62,28 +62,4 @@ public class StockInfoController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
     }
-
-
-    @GetMapping("/redis")
-    public Object getRedis(String code, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate start, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate end) {
-        try{
-            //list로 return
-            return stockService.getRedis(code, start, end);
-        }catch (RuntimeException e){
-            //검색한 코드가 없을 때 보내는 no_content 에러?
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-    }
-
-
-    @GetMapping("/mysql")
-    public Object getMysql(String code, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate start, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate end) {
-        try{
-            //list로 return
-            return stockService.getMysql(code, start, end);
-        }catch (RuntimeException e){
-            //검색한 코드가 없을 때 보내는 no_content 에러?
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-    }
 }
