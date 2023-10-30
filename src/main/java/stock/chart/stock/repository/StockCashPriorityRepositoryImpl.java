@@ -96,4 +96,9 @@ public class StockCashPriorityRepositoryImpl implements
         }
         return Optional.empty();
     }
+
+    @Override
+    public void invalidateSaveFlag(String code) {
+        redisTemplate.delete(FLAG_KEY + code);
+    }
 }
