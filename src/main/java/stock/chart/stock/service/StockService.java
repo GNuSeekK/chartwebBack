@@ -51,11 +51,14 @@ public class StockService {
         if (saveFlag.isPresent() && saveFlag.get() == 1) {
             log.info("레디스에 저장되어 있습니다.");
             List<StockPriceDto> redisData = checkStockCashing(code, start, end);
-            return Objects.requireNonNullElseGet(redisData, () -> stockPriceRepository.findAll(code, start, end)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."))
-                .parallelStream()
-                .map(StockPrice::toStockPriceDto)
-                .collect(Collectors.toList()));
+            if (redisData != null) {
+                return Objects.requireNonNullElseGet(redisData, () -> stockPriceRepository.findAll(code, start, end)
+                    .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."))
+                    .parallelStream()
+                    .map(StockPrice::toStockPriceDto)
+                    .collect(Collectors.toList()));
+            }
+            stockCashPriorityRepository.invalidateSaveFlag(code);
         }
         List<StockPriceDto> stock = updateStockCashing(code, start, end);
         if (stock != null) {
