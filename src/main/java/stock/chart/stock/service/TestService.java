@@ -67,6 +67,7 @@ public class TestService {
                 .collect(Collectors.toList()))
             .build();
         redisStockRepository.setCashStockValue(code, testCashStock);
+//        redisStockRepository.save(testCashStock);
     }
 
     public List<StockPriceDto> getStockPriceFromMysql(String code) {
