@@ -20,4 +20,6 @@ public interface StockCashPriorityRepository {
     void saveFlag(String code);
 
     Optional<Integer> getSavingFlag(String code);
+
+    void invalidateSaveFlag(String code);
 }
