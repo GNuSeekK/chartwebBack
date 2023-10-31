@@ -15,7 +15,7 @@ public class StockCashPriorityRepositoryImpl implements
     private final RedisTemplate<String, RedisInteger> redisTemplate;
 //    private final RedisTemplate<String, RedisInteger> flagTemplate;
 
-    private static final Duration EXPIRATION = Duration.ofSeconds(60);
+    private static final Duration EXPIRATION = Duration.ofSeconds(5);
     private static final String FLAG_KEY = "flag";
     private static final String PRIORITY_KEY = "priority";
     private static final String SAVING_KEY = "saving";
