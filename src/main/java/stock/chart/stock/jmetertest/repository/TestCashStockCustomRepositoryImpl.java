@@ -1,8 +1,8 @@
-package stock.chart.stock.repository;
+package stock.chart.stock.jmetertest.repository;
 
 import java.util.Optional;
 import org.springframework.data.redis.core.RedisTemplate;
-import stock.chart.domain.redis.TestCashStock;
+import stock.chart.stock.jmetertest.entity.TestCashStock;
 
 public class TestCashStockCustomRepositoryImpl implements
     TestCashStockCustomRepository {

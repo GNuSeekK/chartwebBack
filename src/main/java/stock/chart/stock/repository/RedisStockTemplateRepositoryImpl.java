@@ -4,14 +4,11 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.scheduling.annotation.Async;
 import stock.chart.domain.redis.CashStock;
 import stock.chart.domain.redis.CashStockPrice;
-import stock.chart.domain.redis.StockCashPriority;
 
 
 @Slf4j
@@ -32,7 +29,7 @@ public class RedisStockTemplateRepositoryImpl implements
 //    @Async
     @Override
     public void saveSortedSet(String key, Set<CashStockPrice> cashStockPricesSet) {
-        stockCashPriorityRepository.saveFlag(key);
+        stockCashPriorityRepository.saveLockFlag(key);
         cashStockPricesSet.parallelStream()
             .forEach(cashStockPrice -> zPriceSetOperations.add(key, cashStockPrice, cashStockPrice.getOriginalDate().toEpochDay()));
         log.info("저장이 성공적으로 완료 되었습니다");

@@ -1,8 +1,8 @@
-package stock.chart.stock.repository;
+package stock.chart.stock.jmetertest.repository;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import stock.chart.domain.redis.TestCashStock;
+import stock.chart.stock.jmetertest.entity.TestCashStock;
 
 public interface TestCashStockRepository extends JpaRepository<TestCashStock, String>, TestCashStockCustomRepository {
 

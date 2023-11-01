@@ -18,7 +18,7 @@ import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import stock.chart.stock.repository.RedisStockRepository;
 import stock.chart.stock.repository.StockCashPriorityRepository;
-import stock.chart.stock.repository.TestCashStockRepository;
+import stock.chart.stock.jmetertest.repository.TestCashStockRepository;
 
 @Slf4j
 @Configuration
@@ -29,18 +29,27 @@ import stock.chart.stock.repository.TestCashStockRepository;
 @RequiredArgsConstructor
 public class RedisConfig {
 
-    private final RedisProperties redisProperties;
-//    @Value("${spring.redis.host}")
-//    private String redisHost;
 
-    @Value("${spring.redis.cluster.nodes}")
-    private List<String> clusterNodes;
+    @Value("${spring.redis.host}")
+    private String redisHost;
 
-    //     lettuce
+    @Value("${spring.redis.port}")
+    private int redisPort;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(new RedisClusterConfiguration(clusterNodes));
+        return new LettuceConnectionFactory(redisHost, redisPort);
     }
+
+//    @Value("${spring.redis.cluster.nodes}")
+//    private List<String> clusterNodes;
+
+    //     lettuce
+//    @Bean
+//    public RedisConnectionFactory redisConnectionFactory() {
+//        return new LettuceConnectionFactory(new RedisClusterConfiguration(clusterNodes));
+//    }
+
 
 //     Redis template
     @Bean
