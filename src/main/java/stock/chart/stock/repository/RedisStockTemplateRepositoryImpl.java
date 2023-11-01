@@ -26,7 +26,6 @@ public class RedisStockTemplateRepositoryImpl implements
         this.stockCashPriorityRepository = stockCashPriorityRepository;
     }
 
-//    @Async
     @Override
     public void saveSortedSet(String key, Set<CashStockPrice> cashStockPricesSet) {
         stockCashPriorityRepository.saveLockFlag(key);

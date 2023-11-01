@@ -1,5 +1,6 @@
 package stock.chart;
 
+import io.lettuce.core.ReadFrom;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStaticMasterReplicaConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
@@ -29,29 +32,29 @@ import stock.chart.stock.jmetertest.repository.TestCashStockRepository;
 @RequiredArgsConstructor
 public class RedisConfig {
 
+//    @Value("${spring.redis.host}")
+//    private String redisHost;
+//
+//    @Value("${spring.redis.port}")
+//    private int redisPort;
 
-    @Value("${spring.redis.host}")
-    private String redisHost;
-
-    @Value("${spring.redis.port}")
-    private int redisPort;
+    @Value("${spring.redis.cluster.nodes}")
+    private List<String> clusterNodes;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(redisHost, redisPort);
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+            .readFrom(ReadFrom.REPLICA_PREFERRED)
+            .build();
+        RedisStaticMasterReplicaConfiguration slaveConfig = new RedisStaticMasterReplicaConfiguration(
+            clusterNodes.get(0).split(":")[0], Integer.parseInt(clusterNodes.get(0).split(":")[1]));
+        clusterNodes.subList(1, clusterNodes.size()).forEach(node -> {
+            slaveConfig.addNode(node.split(":")[0], Integer.parseInt(node.split(":")[1]));
+        });
+        return new LettuceConnectionFactory(slaveConfig, clientConfig);
     }
 
-//    @Value("${spring.redis.cluster.nodes}")
-//    private List<String> clusterNodes;
-
-    //     lettuce
-//    @Bean
-//    public RedisConnectionFactory redisConnectionFactory() {
-//        return new LettuceConnectionFactory(new RedisClusterConfiguration(clusterNodes));
-//    }
-
-
-//     Redis template
+    //     Redis template
     @Bean
     public RedisTemplate<?, ?> redisTemplate() {
         RedisTemplate<?, ?> template = new RedisTemplate<>();
