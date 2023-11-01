@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisSystemException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stock.chart.domain.Stock;
@@ -90,9 +91,13 @@ public class StockService {
                 }
                 Optional<Integer> savingFlag = stockCashPriorityRepository.getLockFlag(code);
                 if (savingFlag.isEmpty()) { // 우선순위가 1보다 작고, 저장중인게 없으면
-                    redisStockRepository.saveSortedSet(code, stock.getStockPrices().stream()
-                        .map(StockPrice::toCashStockPrice)
-                        .collect(Collectors.toSet()));
+                    try {
+                        redisStockRepository.saveSortedSet(code, stock.getStockPrices().stream()
+                            .map(StockPrice::toCashStockPrice)
+                            .collect(Collectors.toSet()));
+                    } catch (RedisSystemException e) {
+                        log.info("레디스 저장 실패");
+                    }
                 }
                 return Optional.of(stock.getStockPrices().parallelStream()
                     .filter(stockPrice -> stockPrice.getId().getDate().isAfter(start.minusDays(1)) && stockPrice.getId()
