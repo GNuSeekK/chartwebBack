@@ -15,11 +15,11 @@ public interface StockCashPriorityRepository {
 
     Optional<Integer> getPriority(String code);
 
-    Optional<Integer> getSaveFlag(String code);
+    Optional<Integer> getSavedFlag(String code);
 
-    void saveFlag(String code);
+    void saveLockFlag(String code);
 
-    Optional<Integer> getSavingFlag(String code);
+    Optional<Integer> getLockFlag(String code);
 
     void invalidateSaveFlag(String code);
 }

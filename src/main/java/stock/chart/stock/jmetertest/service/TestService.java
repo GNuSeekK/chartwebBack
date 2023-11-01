@@ -1,4 +1,4 @@
-package stock.chart.stock.service;
+package stock.chart.stock.jmetertest.service;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -11,12 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 import stock.chart.domain.Stock;
 import stock.chart.domain.StockPrice;
 import stock.chart.domain.redis.CashStockPrice;
-import stock.chart.domain.redis.TestCashStock;
+import stock.chart.stock.exception.IllegalStockException;
+import stock.chart.stock.jmetertest.entity.TestCashStock;
 import stock.chart.stock.dto.StockPriceDto;
 import stock.chart.stock.repository.StockCashPriorityRepository;
 import stock.chart.stock.repository.StockPriceRepository;
 import stock.chart.stock.repository.StockRepository;
-import stock.chart.stock.repository.TestCashStockRepository;
+import stock.chart.stock.jmetertest.repository.TestCashStockRepository;
 
 @Service
 @Transactional(readOnly = true)
@@ -149,5 +150,16 @@ public class TestService {
     public void allStockData(String code) {
         stockPriceRepository.findAllForDummy()
             .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."));
+    }
+
+
+    public List<StockPriceDto> getStockPriceRdbms(String code, LocalDate start, LocalDate end) {
+        Date date = new Date();
+        List<StockPrice> stockPrices = stockPriceRepository.findAll(code, start, end)
+            .orElseThrow(IllegalStockException::new);
+        log.info("mysql 조회 시간 : {}", new Date().getTime() - date.getTime());
+        return stockPrices.parallelStream()
+            .map(StockPrice::toStockPriceDto)
+            .collect(Collectors.toList());
     }
 }

@@ -1,4 +1,4 @@
-package stock.chart.domain.redis;
+package stock.chart.stock.jmetertest.entity;
 
 
 import java.io.Serializable;
@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
+import stock.chart.domain.redis.CashStockPrice;
 import stock.chart.stock.dto.StockPriceDto;
 
 @RedisHash("cash_stock")

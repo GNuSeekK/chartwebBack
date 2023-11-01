@@ -1,7 +1,7 @@
-package stock.chart.stock.repository;
+package stock.chart.stock.jmetertest.repository;
 
 import java.util.Optional;
-import stock.chart.domain.redis.TestCashStock;
+import stock.chart.stock.jmetertest.entity.TestCashStock;
 
 public interface TestCashStockCustomRepository {
 
