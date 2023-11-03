@@ -72,23 +72,15 @@ public class LoginMemberService {
     }
 
     @Transactional(noRollbackFor = UsedTokenException.class) // UsedTokenException 발생시 rollback 하지 않음
-    public TokenInfo reissue(String refreshToken) {
+    public TokenInfo reissue(String refreshToken, Long memberId) {
         log.info("reissue start");
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new RefreshTokenInvalidException();
-        }
-
         // Refresh Token Rotation 기법 사용, 유효한 Refresh Token인지 확인
         // 유효하지 않을 경우 Exception 발생
         // 유효할 경우 Refresh Token 가져와서 사용
         RefreshToken refreshTokenEntity = refreshTokenRotation(refreshToken);
-        if (refreshTokenEntity.getStatus() == RefreshTokenStatus.INVALID) {
-            throw new UsedTokenException();
-        }
         refreshTokenEntity.updateStatus(RefreshTokenStatus.INVALID);
         // 3. 토큰 생성
-        TokenInfo token = createNewToken(jwtTokenProvider.getMemberId(refreshToken),
-            refreshTokenEntity.getMember().getPassword());
+        TokenInfo token = createNewToken(memberId, refreshTokenEntity.getMember().getPassword());
         // 4. 저장소에 Refresh Token 저장
         saveRefreshToken(token, refreshTokenEntity.getMember());
         return token;
@@ -98,18 +90,19 @@ public class LoginMemberService {
      * Refresh Token Rotation 기법 적용
      */
     private RefreshToken refreshTokenRotation(String refreshToken) {
-        log.info("refreshTokenRotation start");
         Optional<RefreshToken> token = refreshTokenRepository.findFetchByRefreshToken(refreshToken);
         if (token.isEmpty()) {
             throw new RefreshTokenInvalidException();
         }
-        log.info("token: {}", token);
         RefreshToken refreshTokenEntity = token.get();
-        log.info("refreshTokenEntity: {}", refreshTokenEntity);
         if (refreshTokenEntity.getStatus() == RefreshTokenStatus.INVALID) {
             // 탈취된 토큰이 활용된 것이므로, 관련 멤버의 모든 Refresh Token을 무효화한다.
             // refresh 토큰은 한번만 사용할 수 있도록 한다.
             refreshTokenRepository.updateAllByMember(refreshTokenEntity.getMember(), RefreshTokenStatus.INVALID);
+            // Exception을 던지고 Transactional이 rollback하지 않도록 한다.
+            log.info("탈취된 토큰이 활용되었습니다.");
+            log.info("refreshTokenEntity: {}", refreshTokenEntity);
+            throw new UsedTokenException();
         }
         log.info("end refreshTokenRotation");
         return refreshTokenEntity;

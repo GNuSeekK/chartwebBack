@@ -18,7 +18,7 @@ public class MemberControllerAdvice {
 
     @ExceptionHandler(InvalidMemberException.class)
     public ResponseEntity<List<FieldError>> invalidMemberException(InvalidMemberException e) {
-        return ResponseEntity.badRequest().body(makeListErrors("memberInfoChangeForm", "member", e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(makeListErrors("memberInfoChangeForm", "member", e.getMessage()));
     }
 
     @ExceptionHandler(DuplicateEmailException.class)

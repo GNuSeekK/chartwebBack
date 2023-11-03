@@ -7,11 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import stock.chart.member.dto.DeleteMemberForm;
 import stock.chart.member.dto.MemberInfoChangeForm;
@@ -30,10 +33,13 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    /**
+     * 회원 정보 조회, 성공시 200, accessToken이 유효하지 않을 경우 401, 404 존재하지 않는 회원
+     */
     @GetMapping("/info")
-    public Object getMemberInfo(@RequestHeader("Authorization") String accessToken) {
-        accessToken = accessTokenValidityCheck(accessToken);
-        return memberService.getMemberInfo(accessToken);
+    public ResponseEntity<MemberInfoDto> getMemberInfo(@RequestAttribute("memberId") Long memberId) {
+        log.info("memberId: {}", memberId);
+        return ResponseEntity.ok().body(memberService.getMemberInfo(memberId));
     }
 
     /**
@@ -78,23 +84,11 @@ public class MemberController {
      * 닉네임 변경은 회원에 막대한 영향 끼치지 않으므로 accessToken만 확인하고 202 반환 만약 닉네임 중복일 경우에는 409 반환
      */
     @PatchMapping("/nickname")
-    public ResponseEntity<String> changeNickname(@RequestHeader("Authorization") String accessToken, @RequestBody
+    public ResponseEntity<String> changeNickname(@RequestAttribute("memberId") Long memberId, @RequestBody
     MemberInfoChangeForm memberInfoChangeForm, BindingResult bindingResult) {
-        accessToken = accessTokenValidityCheck(accessToken);
-
-        memberService.changeNickname(accessToken, memberInfoChangeForm.getNickname());
-
+        memberService.changeNickname(memberId, memberInfoChangeForm.getNickname());
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 
-    private String accessTokenValidityCheck(String accessToken) {
-        if (accessToken == null || accessToken.isEmpty()) {
-            throw new AccessTokenInvalidException();
-        }
-        if (!accessToken.startsWith("Bearer ")) {
-            throw new AccessTokenInvalidException();
-        }
-        return accessToken.substring(7);
-    }
 
 }

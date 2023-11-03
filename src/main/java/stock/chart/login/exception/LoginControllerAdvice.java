@@ -6,12 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import stock.chart.login.exception.KaKaoLoginFailException;
 @RestControllerAdvice
 public class LoginControllerAdvice {
     @ExceptionHandler(MemberNotMatchException.class)
     public ResponseEntity<List<FieldError>> memberNotMatchException(MemberNotMatchException e) {
-        return ResponseEntity.badRequest().body(makeListErrors("loginMemberForm", "member", e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(makeListErrors("loginMemberForm", "member", e.getMessage()));
     }
 
     @ExceptionHandler(RefreshTokenInvalidException.class)
@@ -21,7 +20,7 @@ public class LoginControllerAdvice {
 
     @ExceptionHandler(UsedTokenException.class)
     public ResponseEntity<List<FieldError>> usedTokenError(UsedTokenException e) {
-        return ResponseEntity.badRequest().body(makeListErrors("refreshToken", "usedRefreshToken", e.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(makeListErrors("refreshToken", "usedRefreshToken", e.getMessage()));
     }
 
     public List<FieldError> makeListErrors(String objectName, String field, String message) {

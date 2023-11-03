@@ -115,24 +115,15 @@ public class JwtTokenProvider {
         return false;
     }
 
-    private Claims parseClaims(String accessToken) {
+    public Claims parseClaims(String token) {
         try {
             return Jwts.parserBuilder()
                .setSigningKey(secret)
                .build()
-               .parseClaimsJws(accessToken)
+               .parseClaimsJws(token)
                .getBody();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
         }
-    }
-
-    public String getMemberId(String refreshToken) {
-        Claims claims = Jwts.parserBuilder()
-            .setSigningKey(secret)
-            .build()
-            .parseClaimsJws(refreshToken)
-            .getBody();
-        return claims.getSubject();
     }
 }

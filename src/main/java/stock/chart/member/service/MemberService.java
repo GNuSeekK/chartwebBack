@@ -24,10 +24,6 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public MemberInfoDto getMemberInfo(String accessToken) {
-        Long id = Long.valueOf(jwtTokenProvider.getMemberId(accessToken));
-        return getMemberInfo(id);
-    }
 
     public MemberInfoDto getMemberInfo(Long id) {
         return memberRepository.findMemberDtoById(id)
@@ -67,13 +63,12 @@ public class MemberService {
 
 
     @Transactional
-    public Long changeNickname(String accessToken, String nickname) {
-        Long id = Long.valueOf(jwtTokenProvider.getMemberId(accessToken));
+    public Long changeNickname(Long id, String nickname) {
         Member member = getMemberById(id);
-        member.changeNickname(nickname);
         if (memberRepository.findByNickname(nickname).isPresent()) {
             throw new DuplicateNicknameException();
         }
+        member.changeNickname(nickname);
         return member.getId();
     }
 
