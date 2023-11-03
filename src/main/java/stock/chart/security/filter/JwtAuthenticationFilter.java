@@ -36,18 +36,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.info("doFilterInternal start");
         String accesstoken = request.getHeader(HttpHeaders.AUTHORIZATION);
         Cookie refreshToken = WebUtils.getCookie(request, "refreshToken");
-        log.info("accesstoken: {}", accesstoken);
-        log.info("refreshToken: {}", refreshToken);
-
-        // access token이 있고, BEARER로 시작한다면
         if (accesstoken != null && accesstoken.startsWith(BEARER)) {
             String token = accesstoken.substring(BEARER.length());
-            log.info("token: {}", token);
             // token을 검증한다.
             try {
                 if (jwtTokenProvider.validateToken(token)) {
-                    // token이 유효하다면
-                    // token으로부터 유저 정보를 받아온다.
+                    // token이 유효하다면 token으로부터 유저 정보를 받아온다.
                     Authentication authentication = jwtTokenProvider.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     request.setAttribute("memberId", jwtTokenProvider.parseClaims(token).getSubject());
@@ -67,12 +61,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-        } else if (refreshToken != null) {
-            // access token이 없고, refresh token이 있다면
-            // refresh token을 검증한다.
-            log.info("refresh token: {}", refreshToken.getValue());
+        } else if (request.getServletPath().equals("/login/token/reissue")) {
+            // 재발급 요청일 경우 refreshToken 검증
             String token = refreshToken.getValue();
-            log.info("token: {}", token);
             try {
                 if (jwtTokenProvider.validateToken(token)) {
                     // refresh token이 유효하다면
@@ -82,8 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             } catch (ExpiredJwtException e) {
                 log.info("ExpiredJwtException");
-                // refresh token이 만료되었다면
-                // 에러를 보낸다
+                // refresh token이 만료되었다면 에러 보낸다
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 Map<String, String> error = new HashMap<>();
                 error.put("message", "refresh token expired");
