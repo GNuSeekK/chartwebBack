@@ -22,13 +22,13 @@ public class TestDataInit {
     @EventListener(ApplicationReadyEvent.class)
     public void initData() {
 
-        Member member = new Member("ssafy@ssafy.com", "ssafy", "싸피");
-        Member member2 = new Member("member@ssafy.com", "member", "멤버");
-        Member member3 = new Member("a237246@yahoo.co.jp", "dlrltjd", "이기성");
-
-        memberRepository.save(member);
-        memberRepository.save(member2);
-        memberRepository.save(member3);
+//        Member member = new Member("ssafy@ssafy.com", "ssafy", "싸피");
+//        Member member2 = new Member("member@ssafy.com", "member", "멤버");
+//        Member member3 = new Member("a237246@yahoo.co.jp", "dlrltjd", "이기성");
+//
+//        memberRepository.save(member);
+//        memberRepository.save(member2);
+//        memberRepository.save(member3);
 
         ///////asdfasdfsadf
 

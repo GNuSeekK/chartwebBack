@@ -15,7 +15,7 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
     Optional<StockDataDto> findStockNameById(@Param("code") String code);
 
 
-    @Query("select Stock from Stock s where s.code = :code")
+    @Query("select s from Stock s where s.code = :code")
     Optional<Stock> findStockById(@Param("code") String code);
 
 
