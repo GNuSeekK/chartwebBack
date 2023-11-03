@@ -21,11 +21,28 @@ import stock.chart.stock.service.StockService;
 public class TestController {
 
     private final TestService stockService;
+    private final StockService realStockService;
 
     @GetMapping("/save")
     public ResponseEntity<String> saveStockPrice(String code) {
         stockService.saveStockPriceValue(code);
         return ResponseEntity.ok("저장 완료");
+    }
+
+    @GetMapping("/save/sorted")
+    public ResponseEntity<String> saveStockPriceSorted(String code) {
+        stockService.saveStockPriceValueSorted(code);
+        return ResponseEntity.ok("저장 완료");
+    }
+
+    @GetMapping("/price/sorted/mysql")
+    public ResponseEntity<List<StockPriceDto>> getSortedPriceMysql(String code, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate start, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate end) {
+        return ResponseEntity.ok(stockService.getSortedStockPriceFromMysql(code, start, end));
+    }
+
+    @GetMapping("/price/sorted/redis")
+    public ResponseEntity<List<StockPriceDto>> getSortedPriceRedis(String code, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate start, @DateTimeFormat(pattern = "yyyyMMdd") LocalDate end) {
+        return ResponseEntity.ok(stockService.getSortedStockPriceFromRedis(code, start, end));
     }
 
     @GetMapping("/mysql")
