@@ -52,6 +52,4 @@ public class StockInfoController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
     }
-
-
 }
