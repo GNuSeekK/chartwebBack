@@ -2,9 +2,7 @@ package stock.chart.stock.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -81,13 +79,6 @@ public class StockService {
                 stockCashPriorityRepository.updatePriorityAndExpiration(code);
                 Stock stock = stockRepository.findStockByIdWithStockPrices(code)
                     .orElseThrow(IllegalStockException::new);
-                Optional<Integer> saveFlag = stockCashPriorityRepository.getSavedFlag(code);
-                if (saveFlag.isPresent() && saveFlag.get() == 1) {
-                    List<StockPriceDto> redisData = checkStockCashing(code, start, end).orElse(null);
-                    if (redisData != null) {
-                        return Optional.of(redisData);
-                    }
-                }
                 Optional<Integer> savingFlag = stockCashPriorityRepository.getLockFlag(code);
                 if (savingFlag.isEmpty()) { // 우선순위가 1보다 작고, 저장중인게 없으면
                     try {
@@ -103,15 +94,15 @@ public class StockService {
                         .getDate().isBefore(end.plusDays(1)))
                     .map(StockPrice::toStockPriceDto)
                     .collect(Collectors.toList()));
-            } else {
-                // 우선순위가 1보다 크면
-                log.info("우선순위가 1보다 큽니다.");
-                // 우선순위 1 감소
-                stockCashPriorityRepository.updatePriorityAndExpiration(code);
             }
-        } else {
-            log.info("우선순위에 없습니다.");
+            // 우선순위가 1보다 크면 우선순위 1 감소
+            log.info("우선순위가 1보다 큽니다.");
+            stockCashPriorityRepository.updatePriorityAndExpiration(code);
+        }
+
+        if (priority.isEmpty()) {
             // 우선순위에 없을 때 -> 우선순위 5로 저장
+            log.info("우선순위에 없습니다.");
             stockCashPriorityRepository.save(StockCashPriority.builder()
                 .code(code)
                 .priority(MAX_PRIORITY)

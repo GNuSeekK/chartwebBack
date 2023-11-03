@@ -3,6 +3,7 @@ package stock.chart.stock.jmetertest.service;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,10 +11,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stock.chart.domain.Stock;
 import stock.chart.domain.StockPrice;
+import stock.chart.domain.redis.CashStock;
 import stock.chart.domain.redis.CashStockPrice;
 import stock.chart.stock.exception.IllegalStockException;
 import stock.chart.stock.jmetertest.entity.TestCashStock;
 import stock.chart.stock.dto.StockPriceDto;
+import stock.chart.stock.repository.RedisStockRepository;
 import stock.chart.stock.repository.StockCashPriorityRepository;
 import stock.chart.stock.repository.StockPriceRepository;
 import stock.chart.stock.repository.StockRepository;
@@ -29,6 +32,7 @@ public class TestService {
     private final StockPriceRepository stockPriceRepository;
     private final TestCashStockRepository redisStockRepository;
     private final StockCashPriorityRepository stockCashPriorityRepository;
+    private final RedisStockRepository realRedisStockRepository;
 
     public void saveStockPrice(String code) {
         Stock stock = stockRepository.findStockByIdWithStockPrices(code)
@@ -160,6 +164,47 @@ public class TestService {
         log.info("mysql 조회 시간 : {}", new Date().getTime() - date.getTime());
         return stockPrices.parallelStream()
             .map(StockPrice::toStockPriceDto)
+            .collect(Collectors.toList());
+    }
+
+    public void saveStockPriceValueSorted(String code) {
+        Stock stock = stockRepository.findStockByIdWithStockPrices(code)
+            .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."));
+        List<StockPrice> stockPrices = stock.getStockPrices();
+        Set<CashStockPrice> collect = stockPrices.parallelStream()
+            .map(stockPrice -> CashStockPrice.builder()
+                .originalDate(stockPrice.getId().getDate())
+                .open(stockPrice.getOpen())
+                .high(stockPrice.getHigh())
+                .low(stockPrice.getLow())
+                .close(stockPrice.getClose())
+                .volume(stockPrice.getVolume())
+                .build())
+            .collect(Collectors.toSet());
+        realRedisStockRepository.saveSortedSet(code, collect);
+    }
+
+    public List<StockPriceDto> getSortedStockPriceFromMysql(String code, LocalDate start, LocalDate end) {
+        List<StockPrice> stockPrices = stockPriceRepository.findAll(code, start, end)
+            .orElseThrow(IllegalStockException::new);
+        return stockPrices.parallelStream()
+            .map(StockPrice::toStockPriceDto)
+            .collect(Collectors.toList());
+    }
+
+    public List<StockPriceDto> getSortedStockPriceFromRedis(String code, LocalDate start, LocalDate end) {
+        CashStock cashStock = realRedisStockRepository.getCashStockWithSortedStockPrice(code, start, end)
+            .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."));
+        return cashStock.getCashStockPricesSet().parallelStream()
+            .map(cashStockPrice -> StockPriceDto.builder()
+                .code(code)
+                .date(cashStockPrice.getOriginalDate())
+                .open(cashStockPrice.getOpen())
+                .high(cashStockPrice.getHigh())
+                .low(cashStockPrice.getLow())
+                .close(cashStockPrice.getClose())
+                .volume(cashStockPrice.getVolume())
+                .build())
             .collect(Collectors.toList());
     }
 }
