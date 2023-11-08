@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -55,6 +56,9 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
     @Column(unique = true)
     private String kakaoEmail;
+
+    @ColumnDefault("0")
+    private int point;
 
 
     @OneToMany(mappedBy = "member", cascade = javax.persistence.CascadeType.ALL, orphanRemoval = true)
@@ -118,5 +122,9 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
     public void changeKakaoEmail(String email) {
         this.kakaoEmail = email;
+    }
+
+    public void sumPoint(int point) {
+        this.point += point;
     }
 }

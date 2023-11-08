@@ -24,7 +24,6 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-
     public MemberInfoDto getMemberInfo(Long id) {
         return memberRepository.findMemberDtoById(id)
             .orElseThrow(InvalidMemberException::new);
@@ -70,6 +69,13 @@ public class MemberService {
         }
         member.changeNickname(nickname);
         return member.getId();
+    }
+
+    @Transactional
+    public int changePoint(Long id, int point) {
+        Member member = getMemberById(id);
+        member.sumPoint(point);
+        return member.getPoint();
     }
 
     private Member getMemberById(Long id) {

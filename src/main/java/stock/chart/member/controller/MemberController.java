@@ -7,12 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +21,6 @@ import stock.chart.member.dto.PasswordChangeForm;
 import stock.chart.member.dto.SignUpForm;
 import stock.chart.member.exception.PasswordNotMatchException;
 import stock.chart.member.service.MemberService;
-import stock.chart.security.exception.AccessTokenInvalidException;
 
 @Slf4j
 @RestController
@@ -46,7 +43,8 @@ public class MemberController {
      * 회원가입 폼 확인 필요하면 400, 중복일 경우 409, 성공시 200
      */
     @PostMapping
-    public ResponseEntity<MemberInfoDto> registerMember(@Valid @RequestBody SignUpForm signUpForm, BindingResult bindingResult) {
+    public ResponseEntity<MemberInfoDto> registerMember(@Valid @RequestBody SignUpForm signUpForm,
+        BindingResult bindingResult) {
         log.info("signUpForm : {}", signUpForm);
         MemberInfoDto memberInfoDto;
         Long id = memberService.registerMember(signUpForm);
@@ -89,6 +87,5 @@ public class MemberController {
         memberService.changeNickname(memberId, memberInfoChangeForm.getNickname());
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
-
 
 }
