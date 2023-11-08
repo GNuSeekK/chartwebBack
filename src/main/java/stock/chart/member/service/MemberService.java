@@ -73,9 +73,14 @@ public class MemberService {
 
     @Transactional
     public int changePoint(Long id, int point) {
-        Member member = getMemberById(id);
+        Member member = getMemberByIdWithLock(id);
         member.sumPoint(point);
         return member.getPoint();
+    }
+
+    private Member getMemberByIdWithLock(Long id) {
+        return memberRepository.findByIdWithLock(id)
+            .orElseThrow(InvalidMemberException::new);
     }
 
     private Member getMemberById(Long id) {

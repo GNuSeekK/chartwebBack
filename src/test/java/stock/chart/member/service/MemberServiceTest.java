@@ -52,43 +52,6 @@ class MemberServiceTest {
     }
 
     @Test
-    void 포인트낙관적락테스트() throws Exception {
-        // given
-        Member member = saveTestMember();
-        int threadCount = 5;
-        int point = 1000;
-        AtomicInteger successCount = new AtomicInteger(0);
-        AtomicInteger failCount = new AtomicInteger(0);
-        // when
-        Member newMember = memberRepository.findByEmail(member.getEmail()).get();
-        Long memberId = newMember.getId();
-        ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch latch = new CountDownLatch(threadCount);
-        for (int i = 0; i < threadCount; i++) {
-            try {
-                executorService.execute(() -> {
-                    try {
-                        memberService.changePoint(memberId, point);
-                        successCount.incrementAndGet();
-                    } catch (ObjectOptimisticLockingFailureException e) {
-                        failCount.incrementAndGet();
-                    }
-                });
-            } finally {
-                latch.countDown();
-            }
-        }
-        latch.await();
-
-        Thread.sleep(1000);
-        // then
-        Member findMember = memberRepository.findByEmail(member.getEmail()).get();
-        assertThat(findMember.getPoint()).isEqualTo(point * successCount.intValue());
-        assertThat(findMember.getVersion()).isEqualTo(successCount.intValue());
-        assertThat(successCount.intValue() + failCount.intValue()).isEqualTo(threadCount);
-    }
-
-    @Test
     void 포인트동시성테스트() throws Exception {
         // given
         Member member = saveTestMember();
@@ -96,7 +59,6 @@ class MemberServiceTest {
         int point = 1000;
         AtomicInteger count = new AtomicInteger(0);
         // when
-
         Member newMember = memberRepository.findByEmail(member.getEmail()).get();
         Long memberId = newMember.getId();
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
@@ -117,7 +79,7 @@ class MemberServiceTest {
 
         Thread.sleep(1000);
         Member findMember = memberRepository.findByEmail(member.getEmail()).get();
-        memberRepository.delete(findMember);
+        memberRepository.deleteAll();
         assertThat(count.intValue()).isEqualTo(point * threadCount);
         assertThat(findMember.getPoint()).isEqualTo(point * threadCount);
     }
