@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.Version;
 import javax.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,6 +60,9 @@ public class Member extends BaseTimeEntity implements UserDetails {
 
     @ColumnDefault("0")
     private int point;
+
+    @Version
+    private Long version;
 
 
     @OneToMany(mappedBy = "member", cascade = javax.persistence.CascadeType.ALL, orphanRemoval = true)
