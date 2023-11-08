@@ -1,22 +1,17 @@
 package stock.chart.stock.dto;
 
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import stock.chart.domain.Stock;
-import stock.chart.domain.StockDateId;
-import stock.chart.domain.StockPrice;
 
-import javax.persistence.*;
-import java.time.LocalDate;
-import java.util.Objects;
-
-
-
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 public class StockPriceDto {
+
     private LocalDate date;
     private int open;
     private int high;

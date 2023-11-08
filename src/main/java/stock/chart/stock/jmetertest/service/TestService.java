@@ -83,7 +83,6 @@ public class TestService {
         log.info("mysql 조회 시간 : {}", new Date().getTime() - date.getTime());
         return stockPrices.parallelStream()
             .map(stockPrice -> StockPriceDto.builder()
-                .code(stockPrice.getId().getCode())
                 .date(stockPrice.getId().getDate())
                 .open(stockPrice.getOpen())
                 .high(stockPrice.getHigh())
@@ -102,7 +101,6 @@ public class TestService {
         List<CashStockPrice> cashStockPrices = testCashStock.getCashStockPricesSet();
         return cashStockPrices.parallelStream()
             .map(cashStockPrice -> StockPriceDto.builder()
-                .code(code)
                 .date(cashStockPrice.getOriginalDate())
                 .open(cashStockPrice.getOpen())
                 .high(cashStockPrice.getHigh())
@@ -121,7 +119,6 @@ public class TestService {
         List<CashStockPrice> cashStockPrices = testCashStock.getCashStockPricesSet();
         return cashStockPrices.parallelStream()
             .map(cashStockPrice -> StockPriceDto.builder()
-                .code(code)
                 .date(cashStockPrice.getOriginalDate())
                 .open(cashStockPrice.getOpen())
                 .high(cashStockPrice.getHigh())
@@ -197,7 +194,6 @@ public class TestService {
             .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."));
         return cashStock.getCashStockPricesSet().parallelStream()
             .map(cashStockPrice -> StockPriceDto.builder()
-                .code(code)
                 .date(cashStockPrice.getOriginalDate())
                 .open(cashStockPrice.getOpen())
                 .high(cashStockPrice.getHigh())

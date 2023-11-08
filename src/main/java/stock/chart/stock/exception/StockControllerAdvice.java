@@ -26,4 +26,9 @@ public class StockControllerAdvice {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(makeListErrors("stock", "stock", e.getMessage()));
     }
 
+    @ExceptionHandler(StockNotFoundException.class)
+    public ResponseEntity<List<FieldError>> stockNotFoundException(StockNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(makeListErrors("stock", "stock", e.getMessage()));
+    }
+
 }

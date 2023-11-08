@@ -12,10 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import stock.chart.domain.Stock;
 import stock.chart.domain.StockPrice;
+import stock.chart.domain.redis.CashStock;
+import stock.chart.domain.redis.StockCashPriority;
 import stock.chart.stock.dto.StockDataDto;
-import stock.chart.stock.dto.StockPriceDto;
-import stock.chart.stock.dto.StockPriceParam;
-import stock.chart.stock.exception.StockNotFoundException;
 import stock.chart.stock.dto.StockPriceDto;
 import stock.chart.stock.exception.IllegalStockException;
 import stock.chart.stock.repository.RedisStockRepository;
@@ -39,18 +38,25 @@ public class StockService {
 
     public StockDataDto getStockName(String code) {
         return stockRepository.findStockNameById(code)
-                .orElseThrow(StockNotFoundException::new);
+            .orElseThrow(IllegalStockException::new);
     }
 
-    public Stock getStock(String code){
+    public Stock getStock(String code) {
         return stockRepository.findStockById(code)
-                .orElseThrow(StockNotFoundException::new);
+            .orElseThrow(IllegalStockException::new);
     }
 
     /**
      * update가 redis에만 일어나므로 transaction readOnly = true
      */
     public List<StockPriceDto> getStockPrice(String code, LocalDate start, LocalDate end) {
+
+        if (start == null) {
+            start = LocalDate.now().minusYears(1);
+        }
+        if (end == null) {
+            end = LocalDate.now();
+        }
 
         Optional<Integer> savedFlag = stockCashPriorityRepository.getSavedFlag(code);
         if (savedFlag.isPresent() && savedFlag.get() == 1) {
@@ -124,13 +130,4 @@ public class StockService {
     }
 
 
-    public List<StockPriceDto> getStockPriceMySQL(String code, LocalDate start, LocalDate end) {
-        Date date = new Date();
-        List<StockPrice> stockPrices = stockPriceRepository.findAll(code, start, end)
-            .orElseThrow(() -> new RuntimeException("존재하지 않는 주식입니다."));
-        log.info("mysql 조회 시간 : {}", new Date().getTime() - date.getTime());
-        return stockPrices.parallelStream()
-            .map(StockPrice::toStockPriceDto)
-            .collect(Collectors.toList());
-    }
 }

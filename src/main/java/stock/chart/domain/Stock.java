@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Persistable;
 import stock.chart.domain.base.BaseTimeEntity;
 import stock.chart.domain.redis.CashStock;
+import stock.chart.domain.redis.CashStock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,9 @@ public class Stock extends BaseTimeEntity implements Persistable<String> {
         this.name = name;
     }
 
+
+    @OneToMany(mappedBy = "stock", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<StockPrice> stockPrices = new ArrayList<>();
 
     @OneToMany(mappedBy = "stock", fetch = FetchType.LAZY)
     private List<Board> board = new ArrayList<>();

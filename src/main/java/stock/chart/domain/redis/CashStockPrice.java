@@ -25,7 +25,6 @@ public class CashStockPrice implements Comparable<CashStockPrice>, Serializable 
     private int volume;
     public StockPriceDto toStockPriceDto(String code) {
         return StockPriceDto.builder()
-            .code(code)
             .date(originalDate)
             .open(open)
             .high(high)

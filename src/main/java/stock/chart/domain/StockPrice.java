@@ -16,8 +16,6 @@ import stock.chart.domain.base.BaseTimeEntity;
 import stock.chart.domain.redis.CashStockPrice;
 import stock.chart.stock.dto.StockPriceDto;
 
-import java.util.Objects;
-
 @Entity
 @Getter
 @Builder
@@ -84,7 +82,6 @@ public class StockPrice extends BaseTimeEntity implements Persistable<StockDateI
 
     public StockPriceDto toStockPriceDto() {
         return StockPriceDto.builder()
-            .code(this.id.getCode())
             .date(this.id.getDate())
             .open(this.open)
             .high(this.high)
