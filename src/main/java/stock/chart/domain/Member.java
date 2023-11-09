@@ -61,9 +61,6 @@ public class Member extends BaseTimeEntity implements UserDetails {
     @ColumnDefault("0")
     private int point;
 
-    @Version
-    private Long version;
-
 
     @OneToMany(mappedBy = "member", cascade = javax.persistence.CascadeType.ALL, orphanRemoval = true)
     private List<MemberInterestGroup> memberInterestGroups;
