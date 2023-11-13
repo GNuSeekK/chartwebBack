@@ -2,6 +2,7 @@ package stock.chart.security.exception;
 
 
 import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,7 +19,7 @@ public class AccessTokenControllerAdvice {
     }
 
     @ExceptionHandler(AccessTokenInvalidException.class)
-    public ResponseEntity accessTokenInvalidException(AccessTokenInvalidException e) {
-        return ResponseEntity.badRequest().body(makeListErrors("accessToken", "accessToken", e.getMessage()));
+    public ResponseEntity<List<FieldError>> accessTokenInvalidException(AccessTokenInvalidException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(makeListErrors("accessToken", "accessToken", e.getMessage()));
     }
 }
