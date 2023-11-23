@@ -5,38 +5,24 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStaticMasterReplicaConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import stock.chart.stock.repository.RedisStockRepository;
-import stock.chart.stock.repository.StockCashPriorityRepository;
-import stock.chart.stock.jmetertest.repository.TestCashStockRepository;
+import stock.chart.redis.entity.CacheComplete;
+import stock.chart.stock.entity.CacheStockPrice;
 
 @Slf4j
 @Configuration
-@EnableRedisRepositories(basePackages = "stock.chart", includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
-    RedisStockRepository.class,
-    StockCashPriorityRepository.class,
-    TestCashStockRepository.class}))
+@EnableRedisRepositories
 @RequiredArgsConstructor
 public class RedisConfig {
-
-//    @Value("${spring.redis.host}")
-//    private String redisHost;
-//
-//    @Value("${spring.redis.port}")
-//    private int redisPort;
 
     @Value("${spring.redis.cluster.nodes}")
     private List<String> clusterNodes;
@@ -48,22 +34,33 @@ public class RedisConfig {
             .build();
         RedisStaticMasterReplicaConfiguration slaveConfig = new RedisStaticMasterReplicaConfiguration(
             clusterNodes.get(0).split(":")[0], Integer.parseInt(clusterNodes.get(0).split(":")[1]));
-        clusterNodes.subList(1, clusterNodes.size()).forEach(node -> {
-            slaveConfig.addNode(node.split(":")[0], Integer.parseInt(node.split(":")[1]));
-        });
+        clusterNodes.subList(1, clusterNodes.size()).forEach(node -> slaveConfig.addNode(node.split(":")[0], Integer.parseInt(node.split(":")[1])));
         return new LettuceConnectionFactory(slaveConfig, clientConfig);
     }
 
-    //     Redis template
     @Bean
-    public RedisTemplate<?, ?> redisTemplate() {
-        RedisTemplate<?, ?> template = new RedisTemplate<>();
+    public RedisTemplate<String, CacheStockPrice> cacheStockPriceTemplate() {
+        RedisTemplate<String, CacheStockPrice> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
+
         template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(CacheStockPrice.class));
+
         template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new JdkSerializationRedisSerializer(getClass().getClassLoader()));
-        template.setValueSerializer(new JdkSerializationRedisSerializer(getClass().getClassLoader()));
-        template.afterPropertiesSet();
+        template.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(CacheStockPrice.class));
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, CacheComplete> cacheCompleteTemplate() {
+        RedisTemplate<String, CacheComplete> template = new RedisTemplate<>();
+        template.setConnectionFactory(redisConnectionFactory());
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new Jackson2JsonRedisSerializer<>(CacheComplete.class));
+
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(CacheComplete.class));
         return template;
     }
 

@@ -1,22 +1,36 @@
 package stock.chart.stock.dto;
 
 import java.time.LocalDate;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import stock.chart.domain.StockPrice;
+import stock.chart.stock.entity.CacheStockPrice;
 
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 public class StockPriceDto {
 
-    private LocalDate date;
-    private int open;
-    private int high;
-    private int low;
-    private int close;
-    private int volume;
+    private final Integer open;
+    private final Integer high;
+    private final Integer low;
+    private final Integer close;
+    private final Integer volume;
+    private final LocalDate date;
 
+
+    public StockPriceDto(StockPrice stockPrice) {
+        this.open = stockPrice.getOpen();
+        this.high = stockPrice.getHigh();
+        this.low = stockPrice.getLow();
+        this.close = stockPrice.getClose();
+        this.volume = stockPrice.getVolume();
+        this.date = stockPrice.getDate();
+    }
+
+    public StockPriceDto(CacheStockPrice cacheStockPrice) {
+        this.open = cacheStockPrice.getOpen();
+        this.high = cacheStockPrice.getHigh();
+        this.low = cacheStockPrice.getLow();
+        this.close = cacheStockPrice.getClose();
+        this.volume = cacheStockPrice.getVolume();
+        this.date = LocalDate.ofEpochDay(cacheStockPrice.getDate());
+    }
 }

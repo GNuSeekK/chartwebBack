@@ -4,7 +4,6 @@ import com.sun.istack.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,12 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Persistable;
 import stock.chart.domain.base.BaseTimeEntity;
-import stock.chart.domain.redis.CashStock;
-import stock.chart.domain.redis.CashStock;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 
 @NoArgsConstructor
@@ -72,16 +65,6 @@ public class Stock extends BaseTimeEntity implements Persistable<String> {
     public void addStockPrice(StockPrice stockPrice) {
         this.stockPrices.add(stockPrice);
         stockPrice.setStock(this);
-    }
-
-    public CashStock toCashStock() {
-        return CashStock.builder()
-            .code(this.code)
-            .cashStockPricesSet(
-                this.stockPrices.stream()
-                    .map(StockPrice::toCashStockPrice)
-                    .collect(Collectors.toSet()))
-            .build();
     }
 
     @Override

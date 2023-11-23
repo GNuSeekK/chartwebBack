@@ -1,5 +1,6 @@
 package stock.chart.domain;
 
+import java.time.LocalDate;
 import java.util.Objects;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -13,8 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Persistable;
 import stock.chart.domain.base.BaseTimeEntity;
-import stock.chart.domain.redis.CashStockPrice;
-import stock.chart.stock.dto.StockPriceDto;
 
 @Entity
 @Getter
@@ -26,20 +25,10 @@ public class StockPrice extends BaseTimeEntity implements Persistable<StockDateI
     @EmbeddedId
     private StockDateId id;
 
-    public StockPrice(StockDateId id, int open, int high, int low, int close, int volume) {
-        this.id = id;
-        this.open = open;
-        this.high = high;
-        this.low = low;
-        this.close = close;
-        this.volume = volume;
-    }
-
     @MapsId("code")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stock_code")
     private Stock stock;
-
     private int open;
     private int high;
     private int low;
@@ -68,31 +57,11 @@ public class StockPrice extends BaseTimeEntity implements Persistable<StockDateI
         return this.getCreatedDate() == null;
     }
 
-
-    public CashStockPrice toCashStockPrice() {
-        return CashStockPrice.builder()
-            .originalDate(this.id.getDate())
-            .open(this.open)
-            .high(this.high)
-            .low(this.low)
-            .close(this.close)
-            .volume(this.volume)
-            .build();
-    }
-
-    public StockPriceDto toStockPriceDto() {
-        return StockPriceDto.builder()
-            .date(this.id.getDate())
-            .open(this.open)
-            .high(this.high)
-            .low(this.low)
-            .close(this.close)
-            .volume(this.volume)
-            .build();
-    }
-
     public void setStock(Stock stock) {
         this.stock = stock;
     }
 
+    public LocalDate getDate() {
+        return this.id.getDate();
+    }
 }
