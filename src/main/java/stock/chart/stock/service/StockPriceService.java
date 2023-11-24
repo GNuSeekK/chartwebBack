@@ -9,6 +9,7 @@ import stock.chart.stock.dto.StockPriceDto;
 import stock.chart.stock.dto.StockPriceListDto;
 import stock.chart.stock.dto.StockPriceRequestForm;
 import stock.chart.stock.exception.IllegalStockException;
+import stock.chart.kafka.KafkaProducer;
 import stock.chart.stock.repository.StockPriceRepository;
 
 @Service
@@ -17,6 +18,7 @@ public class StockPriceService {
 
     private final CacheStockPriceService cacheStockPriceService;
     private final StockPriceRepository stockPriceRepository;
+    private final KafkaProducer kafkaProducer;
 
     /**
      * 캐시에서 데이터를 가져오고, 캐시에 데이터가 없으면 DB에서 데이터를 가져온다.
@@ -28,6 +30,7 @@ public class StockPriceService {
         if (cachedStockPriceListDto.isPresent()) {
             return cachedStockPriceListDto.get();
         }
+        kafkaProducer.sendMessage("stock", stockPriceRequestForm.getCode());
         List<StockPriceDto> collect = stockPriceRepository.findAllWithDate(stockPriceRequestForm.getCode(),
                 stockPriceRequestForm.getStart(), stockPriceRequestForm.getEnd())
             .orElseThrow(IllegalStockException::new)
