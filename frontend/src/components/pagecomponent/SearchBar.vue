@@ -25,21 +25,14 @@
 
 <script setup>
 import {computed, reactive, ref, watch} from "vue";
+import {useStockStore} from "@/store/stock";
 
-const stocks = reactive([
-  {
-    name: '삼성전자',
-    code: '005930',
-  },
-  {
-    name: 'SK하이닉스',
-    code: '000660',
-  },
-  {
-    name: 'LG화학',
-    code: '051910',
-  }
-])
+const stockStore = useStockStore()
+const stocks = reactive([])
+stockStore.getStockInfoList().then((res) => {
+  stocks.push(...res)
+})
+
 
 const stockName = ref('');
 const filteredStocks = computed(() => {
