@@ -12,5 +12,4 @@ import java.util.Optional;
 public interface StockPriceRepository extends JpaRepository<StockPrice, Long> {
     @Query("select sp from StockPrice sp where sp.id.code = :code and sp.id.date between :start and :end")
     Optional<List<StockPrice>> findAllWithDate(@Param("code") String code, @Param("start") LocalDate start, @Param("end") LocalDate end);
-
 }
