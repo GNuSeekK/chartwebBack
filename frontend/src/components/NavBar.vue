@@ -6,7 +6,7 @@
     </div>
     <a-layout-header id="header">
       <div class="header-container">
-        <img src="@/assets/img/logo.png" alt="logo" width="100" height="100">
+        <img src="@/assets/img/logo.png" alt="logo" width="100" height="100" @click="redirectToHome">
         <a class="logo-text" @click="redirectToHome">스탁메이트</a>
       </div>
       <div class="menu-container">
@@ -44,9 +44,13 @@
 // Vue Router의 useRoute나 useRouter를 사용해도 됩니다.
 
 import router from "@/router";
+import {ref} from "vue";
 
+
+const menuKey = ref(['home']);
 const redirectToHome = () => {
   router.push('/');
+  menuKey.value = ['home']
 };
 </script>
 

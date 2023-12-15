@@ -4,9 +4,9 @@
       Welcome to <span class="logo-text">스탁메이트</span>
       <SearchBar />
     </div>
-<!--    <div class="content-section">-->
-<!--      <NewsSection />-->
-<!--    </div>-->
+    <div class="content-section">
+      <NewsSection />
+    </div>
   </a-layout-content>
 </template>
 
@@ -29,9 +29,8 @@ import NewsSection from '../components/pagecomponent/NewsSection.vue';
 }
 
 .content-section {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .logo-text {
