@@ -23,7 +23,8 @@ import NewsSection from '../components/pagecomponent/NewsSection.vue';
 
 .welcome-section {
   text-align: center;
-  margin-bottom: 40px;
+  margin-top: 70px;
+  margin-bottom: 100px;
   font-size: 30px;
   font-weight: bold;
 }

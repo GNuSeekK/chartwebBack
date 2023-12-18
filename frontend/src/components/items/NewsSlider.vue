@@ -1,125 +1,91 @@
 <template>
   <div class="news-slider" @mouseover="stopAutoSlide" @mouseleave="startAutoSlide">
-    <transition-group tag="div" name="slider" class="slider-wrapper">
-      <!-- Use v-show to keep all elements in the DOM -->
-      <div
-          v-for="(news, index) in newsList"
-          :key="news.title"
-          class="news-card"
-          v-show="index === activeIndex"
-      >
+    <div v-for="(news, index) in props.newsList" :key="news.title" class="news-card" v-show="index === activeIndex">
+      <a :href="news.link" target="_blank">
+        <img :src="news.image" :alt="news.title" class="news-image" />
         <h3>{{ news.title }}</h3>
-        <img :src="news.image" :alt="news.title" class="news-image"/>
-        <div class="overlay">
-          <div class="arrow left-arrow" @click="prevNews">＜</div>
-          <div class="arrow right-arrow" @click="nextNews">＞</div>
-        </div>
-      </div>
-    </transition-group>
+      </a>
+    </div>
   </div>
 </template>
 
 <script setup>
-import {onMounted, onUnmounted, ref} from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 
 const props = defineProps({
-  newsList: {
-    type: Array,
-    required: true
-  }
-})
-const newsList = props.newsList
+  newsList: Array
+});
 const activeIndex = ref(0);
-const transitionName = ref('slide-left');
-let slideInterval;
+let slideInterval = null;
 
 const startAutoSlide = () => {
+  stopAutoSlide(); // Prevent multiple intervals
   slideInterval = setInterval(() => {
-    activeIndex.value = (activeIndex.value + 1) % newsList.length;
-  }, 2000);
+    activeIndex.value = (activeIndex.value + 1) % props.newsList.length;
+  }, 1000);
 };
 
 const stopAutoSlide = () => {
   clearInterval(slideInterval);
 };
 
-const prevNews = () => {
-  stopAutoSlide();
-  transitionName.value = 'slide-right';
-  activeIndex.value = (activeIndex.value - 1 + newsList.length) % newsList.length;
-  startAutoSlide();
-};
+onMounted(startAutoSlide);
+onUnmounted(stopAutoSlide);
 
-const nextNews = () => {
-  stopAutoSlide();
-  transitionName.value = 'slide-left';
-  activeIndex.value = (activeIndex.value + 1) % newsList.length;
+// Watch for changes in props.newsList to restart the slider
+watch(() => props.newsList, () => {
+  activeIndex.value = 0; // Reset to the first news item
   startAutoSlide();
-};
-
-onMounted(() => {
-  startAutoSlide();
-});
-
-onUnmounted(() => {
-  stopAutoSlide();
-});
+}, { deep: true });
 </script>
 
 <style scoped>
 .news-slider {
   position: relative;
-  margin-right: 100px;
-  width: 500px;
+  width: 600px; /* Adjust as needed */
+  height: 500px; /* Adjust as needed */
+  overflow: hidden;
+  z-index: 15;
+  border: 2px solid #eee;
+  border-radius: 20px;
 }
 
 .news-card {
-  text-align: center;
-  position: relative;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+  background-color: green;
+  z-index: 20;
+}
+
+.news-card a {
+  text-decoration: none;
 }
 
 .news-image {
   width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 10px;
-
+  height: 100%; /* Adjust if you want to maintain aspect ratio */
+  object-fit: cover; /* Adjust or remove if needed */
 }
 
-.overlay {
+.news-card h3 {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
   bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.arrow {
-  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검정색 오버레이 */
-  color: white;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
   padding: 10px;
-  cursor: pointer;
+  margin: 0;
 }
 
-.left-arrow {
-  /* 화살표 왼쪽 오버레이 */
-}
-
-.right-arrow {
-  /* 화살표 오른쪽 오버레이 */
-}
-
-h3 {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
+/* Show only the active news card */
+.news-card.v-show {
+  opacity: 1;
+  position: relative;
 }
 </style>

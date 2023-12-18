@@ -1,10 +1,17 @@
 <template>
   <div class="news-item">
-    <img :src="props.news.imgLink" alt="News Image"/>
+    <div class="img-container">
+      <a :href="props.news.link" target="_blank">
+        <img :src="props.news.imageLink" alt="News Image"/>
+      </a>
+    </div>
+
 
     <div class="contents-wrapper">
       <div class="news-content">
-        <h3>{{ props.news.title }}</h3>
+        <a :href="props.news.link" target="_blank">
+          <h3>{{ props.news.title }}</h3>
+        </a>
         <p>{{ props.news.description }}</p>
       </div>
       <div class="news-reactions">
@@ -25,6 +32,22 @@ const props = defineProps({
 </script>
 
 <style lang="scss" scoped>
+
+.img-container {
+  width: 300px;
+  height: 200px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  margin-right: 16px;
+  object-fit: fill;
+}
+
 .news-item {
   display: flex;
   justify-content: left;
@@ -34,6 +57,7 @@ const props = defineProps({
   border-radius: 20px;
   padding: 16px;
   min-width: 600px;
+  max-width: 800px;
 }
 
 .news-content {
