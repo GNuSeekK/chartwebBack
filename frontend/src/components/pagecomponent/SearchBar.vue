@@ -17,6 +17,7 @@
           width: '80px',
         }"
         size="large"
+        @click="stockChange"
     >
       검색
     </a-button>
@@ -24,9 +25,11 @@
 </template>
 
 <script setup>
-import {computed, reactive, ref, watch} from "vue";
+import {computed, inject, reactive, ref} from "vue";
 import {useStockStore} from "@/store/stock";
+import router from "@/router";
 
+const nowStock = inject('nowStockInfo')
 const stockStore = useStockStore()
 const stocks = reactive([])
 stockStore.getStockInfoList().then((res) => {
@@ -47,6 +50,18 @@ const stockNames = computed(() => {
     };
   });
 });
+
+const stockChange = () => {
+  const stock = filteredStocks.value.find((stock) => stock.name === stockName.value);
+  console.log(stock)
+  console.log(nowStock)
+  if (stock) {
+    nowStock.code = stock.code;
+    nowStock.name = stock.name;
+  }
+  router.push('/chart')
+  stockName.value = '';
+};
 </script>
 
 <style scoped>

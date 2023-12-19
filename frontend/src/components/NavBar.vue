@@ -29,7 +29,7 @@
             <router-link to="/chart">주식 차트</router-link>
           </a-menu-item>
           <a-menu-item key="MyChart">
-            <router-link to="/mychart">나의 차트</router-link>
+            <router-link to="/mychart">나만의 차트</router-link>
           </a-menu-item>
           <a-menu-item key="MyPage">
             <router-link to="/mypage">마이페이지</router-link>

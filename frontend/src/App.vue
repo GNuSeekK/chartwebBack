@@ -2,7 +2,8 @@
   <NavBar />
   <a-layout
       :style="{
-        paddingTop: '200px'
+        paddingTop: '200px',
+        backgroundColor: 'white'
       }"
   >
     <router-view />
@@ -11,6 +12,15 @@
 
 <script setup>
 import NavBar from './components/NavBar.vue';
+import {provide, reactive} from "vue";
+
+const nowStockInfo = reactive(
+    {
+      code: '005930',
+      name: '삼성전자',
+    }
+)
+provide('nowStockInfo', nowStockInfo)
 </script>
 
 <style>
