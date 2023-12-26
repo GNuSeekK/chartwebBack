@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import stock.chart.stock.dto.PopularStockPriceListDto;
 import stock.chart.stock.dto.StockListDto;
 import stock.chart.stock.dto.StockPriceListDto;
 import stock.chart.stock.dto.StockPriceRequestForm;
@@ -33,6 +34,11 @@ public class StockInfoController {
     @GetMapping("/info-list")
     public ResponseEntity<StockListDto> getStockList() {
         return ResponseEntity.ok(stockService.getStockList());
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<PopularStockPriceListDto> getPopularStockList() {
+        return ResponseEntity.ok(stockPriceService.getPopularStockPriceList());
     }
 
 }

@@ -1,7 +1,6 @@
 package stock.chart.domain;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
@@ -11,25 +10,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import stock.chart.domain.base.BaseTimeEntity;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(indexes = @Index(columnList = "stock_id"))
-public class SearchLog extends BaseTimeEntity {
+@Table(indexes = @Index(columnList = "stock_code"))
+public class SearchLog {
 
     @Id
     private SearchLogId id;
 
     @ManyToOne(fetch = javax.persistence.FetchType.LAZY)
-    @JoinColumn(name = "stock_id")
+    @JoinColumn(name = "stock_code")
     private Stock stock;
-
-
-
 
 }

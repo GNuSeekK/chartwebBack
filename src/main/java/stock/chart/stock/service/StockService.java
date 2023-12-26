@@ -16,4 +16,5 @@ public class StockService {
     public StockListDto getStockList() {
         return new StockListDto(stockRepository.findAllStockNameInfo().orElseThrow());
     }
+
 }
